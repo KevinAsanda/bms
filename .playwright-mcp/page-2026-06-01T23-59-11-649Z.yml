@@ -1,0 +1,48 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e19]:
+    - banner [ref=e20]:
+      - heading "Business Insights" [level=1] [ref=e21]
+      - paragraph [ref=e22]: Real-time performance metrics for Simon Family Farm.
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - img [ref=e27]
+          - generic [ref=e29]:
+            - img [ref=e30]
+            - text: 12%
+        - paragraph [ref=e33]: Today's Revenue
+        - heading "R 200.00" [level=3] [ref=e34]
+      - generic [ref=e35]:
+        - img [ref=e38]
+        - paragraph [ref=e41]: Sales Count
+        - heading "1" [level=3] [ref=e42]
+      - generic [ref=e43]:
+        - img [ref=e46]
+        - paragraph [ref=e49]: Cash Payments
+        - heading "R 200.00" [level=3] [ref=e50]
+      - generic [ref=e51]:
+        - img [ref=e54]
+        - paragraph [ref=e59]: Card/EFT
+        - heading "R 0.00" [level=3] [ref=e60]
+    - generic [ref=e61]:
+      - generic [ref=e62]:
+        - heading "Revenue by Category" [level=3] [ref=e63]
+        - application [ref=e67]:
+          - generic [ref=e78]:
+            - generic [ref=e81]: Beef
+            - generic [ref=e82]:
+              - generic [ref=e84]: R0
+              - generic [ref=e86]: R50
+              - generic [ref=e88]: R100
+              - generic [ref=e90]: R150
+              - generic [ref=e92]: R200
+      - generic [ref=e93]:
+        - heading "Top Selling Products" [level=3] [ref=e94]
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98]: "1"
+            - generic [ref=e99]:
+              - paragraph [ref=e100]: Test Beef 1kg
+              - paragraph [ref=e101]: 2 units sold
+          - paragraph [ref=e102]: R 200.00
+  - generic [ref=e103]: R0

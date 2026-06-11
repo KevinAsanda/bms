@@ -1,0 +1,17 @@
+- generic [ref=e2]:
+  - navigation [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e21]: B
+      - generic [ref=e22]:
+        - link [ref=e23] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e24]
+        - link [ref=e29] [cursor=pointer]:
+          - /url: /pos
+          - img [ref=e30]
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e35]
+    - button "Logout" [ref=e40]:
+      - img [ref=e41]
+  - generic [ref=e44]: Loading insights...

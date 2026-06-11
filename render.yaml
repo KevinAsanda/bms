@@ -1,0 +1,52 @@
+services:
+  # 1. Backend Express API
+  - type: web
+    name: bms-api
+    env: node
+    plan: free
+    rootDir: apps/api
+    buildCommand: npm install && npx prisma generate
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # User will input their Supabase connection string
+      - key: DIRECT_URL
+        sync: false # User will input their Supabase direct migration connection string
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: ENCRYPTION_KEY
+        value: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef # 32-byte hex key
+      - key: CORS_ORIGIN
+        fromService:
+          type: static
+          name: bms-web
+          property: url
+
+  # 2. Frontend React static site
+  - type: static
+    name: bms-web
+    plan: free
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    routes:
+      # Rewrite all requests to index.html for React Router compatibility
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: bms-api
+          property: url

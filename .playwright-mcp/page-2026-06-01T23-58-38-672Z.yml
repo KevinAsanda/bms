@@ -1,0 +1,13 @@
+- generic [ref=e3]:
+  - generic [ref=e4]: "[plugin:vite:oxc] Transform failed with 1 error: [PARSE_ERROR] Expected `,` or `]` but found `)` ╭─[ src/pages/POS.jsx:12:32 ] │ 12 │ const [searchQuery, setSearch) = useState(''); │ ┬ ┬ │ ╰───────────────────────── Opened here │ │ │ ╰── `,` or `]` expected ────╯"
+  - generic [ref=e5]: C:/Users/User/Desktop/Project Ya Khethelo/bms/apps/web/src/pages/POS.jsx
+  - generic [ref=e7]: at transformWithOxc (file:///C:/Users/User/Desktop/Project%20Ya%20Khethelo/bms/apps/web/node_modules/vite/dist/node/chunks/node.js:3344:19) at TransformPluginContext.transform (file:///C:/Users/User/Desktop/Project%20Ya%20Khethelo/bms/apps/web/node_modules/vite/dist/node/chunks/node.js:3415:26) at EnvironmentPluginContainer.transform (file:///C:/Users/User/Desktop/Project%20Ya%20Khethelo/bms/apps/web/node_modules/vite/dist/node/chunks/node.js:30387:51) at async loadAndTransform (file:///C:/Users/User/Desktop/Project%20Ya%20Khethelo/bms/apps/web/node_modules/vite/dist/node/chunks/node.js:24646:26) at async viteTransformMiddleware (file:///C:/Users/User/Desktop/Project%20Ya%20Khethelo/bms/apps/web/node_modules/vite/dist/node/chunks/node.js:24440:20)
+  - generic [ref=e8]:
+    - text: Click outside, press Esc key, or fix the code to dismiss.
+    - text: You can also disable this overlay by setting
+    - code [ref=e9]: server.hmr.overlay
+    - text: to
+    - code [ref=e10]: "false"
+    - text: in
+    - code [ref=e11]: vite.config.js
+    - text: .

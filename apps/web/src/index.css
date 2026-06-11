@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  /* Backgrounds */
+  --color-bg-base:       #08080a;   /* Deep black page background */
+  --color-bg-surface:    #121212;   /* Spotify-like card/sidebar background */
+  --color-bg-elevated:   #1e1e1e;   /* Elevated panels, input fields */
+  --color-bg-hover:      #282828;   /* Hover states */
+
+  /* Brand / Primary — Spotify Green */
+  --color-primary:       #1ed760;   /* Primary active green */
+  --color-primary-dark:  #1db954;   /* Hover / pressed green */
+  --color-primary-glow:  rgba(30, 215, 96, 0.15); /* Soft focus indicator */
+
+  /* Text */
+  --color-text-primary:  #ffffff;   /* Pure white main text */
+  --color-text-secondary:#a7a7a7;   /* Spotify gray secondary text */
+  --color-text-muted:    #5e5e5e;   /* Muted details & placeholder text */
+
+  /* Borders */
+  --color-border:        #222222;   /* Subtle divider border */
+  --color-border-strong: #333333;   /* High-contrast border */
+
+  /* Status */
+  --color-success:       #1ed760;   /* Success green (matches brand) */
+  --color-warning:       #f59e0b;   /* Soft warnings */
+  --color-error:         #ef4444;   /* Error states */
+  --color-info:          #3b82f6;   /* Info blue */
+
+  /* Role badges */
+  --color-role-owner:    #c084fc;   /* Muted purple */
+  --color-role-cashier:  #34d399;   /* Muted green */
+  --color-role-stock:    #60a5fa;   /* Muted blue */
+
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
