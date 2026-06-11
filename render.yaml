@@ -27,10 +27,7 @@ services:
       - key: ENCRYPTION_KEY
         value: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef # 32-byte hex key
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: bms-web
-          property: url
+        value: https://bms-web.onrender.com
 
   # 2. Frontend React static site
   - type: web
@@ -47,7 +44,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: bms-api
-          property: url
+        value: https://bms-api.onrender.com
