@@ -28,17 +28,18 @@ services:
         value: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef # 32-byte hex key
       - key: CORS_ORIGIN
         fromService:
-          type: static
+          type: web
           name: bms-web
           property: url
 
   # 2. Frontend React static site
-  - type: static
+  - type: web
     name: bms-web
+    env: static
     plan: free
     rootDir: apps/web
     buildCommand: npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     routes:
       # Rewrite all requests to index.html for React Router compatibility
       - type: rewrite
