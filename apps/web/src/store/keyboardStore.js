@@ -56,7 +56,7 @@ export const useKeyboardStore = create((set, get) => ({
         // Fallback
         activeInput.value += key;
       }
-    } catch (e) {
+    } catch {
       // Inputs like type="number" do not support selectionStart/End in some browsers
       activeInput.value += key;
     }
@@ -98,7 +98,7 @@ export const useKeyboardStore = create((set, get) => ({
       } else {
         activeInput.value = activeInput.value.slice(0, -1);
       }
-    } catch (e) {
+    } catch {
       activeInput.value = activeInput.value.toString().slice(0, -1);
     }
 

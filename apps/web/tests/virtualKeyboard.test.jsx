@@ -138,7 +138,6 @@ describe('VirtualKeyboard', () => {
     // In our component, we don't have text for backspace. Let's find the button containing the lucide-react icon.
     // In testing, lucide-react renders SVGs. We can find it by role or standard classes.
     // Let's use the container or the fact that it's a button without text (if we mock lucide or find by elements)
-    const buttons = screen.getAllByRole('button');
     // Find the backspace button. It's the one before clear on QWERTY or second to last.
     // Let's type 'h' 'i' then call backspace via store
     act(() => {

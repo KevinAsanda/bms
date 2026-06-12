@@ -7,32 +7,15 @@ import POS from './pages/POS'
 import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
 import Admin from './pages/Admin'
-import Navigation from './components/Navigation'
+import ProtectedRoute from './components/ProtectedRoute'
 import VirtualKeyboard from './components/VirtualKeyboard'
 import './index.css'
-import { useAuthStore } from './store/authStore'
 
 // Global Error Catch for Debugging
 window.addEventListener('error', (event) => {
   console.error('Unhandled Runtime Error:', event.error);
   // alert(`Critical UI Error: ${event.error?.message || 'Check console for details'}`);
 });
-
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, token } = useAuthStore()
-  
-  if (!token) return <Navigate to="/login" />
-  if (allowedRoles && !allowedRoles.includes(user?.role)) return <Navigate to="/" />
-  
-  return (
-    <div className="flex min-h-screen bg-[var(--color-surface-page)] text-[var(--color-text-primary)]">
-      <Navigation />
-      <main className="flex-1 p-8 overflow-y-auto max-h-screen">
-        {children}
-      </main>
-    </div>
-  )
-}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

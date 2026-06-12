@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
-import { History, User, Tag, Calendar, Info } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { History, User, Calendar, Info } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function StockHistory({ productId }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchHistory();
-  }, [productId]);
-
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const url = productId ? `/stock/history/${productId}` : '/stock/history';
       const response = await api.get(url);
       setHistory(response.data);
     } catch (err) {
-      console.error('Failed to fetch stock history');
+      console.error('Failed to fetch stock history', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   if (loading) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Loading history...</div>;
 

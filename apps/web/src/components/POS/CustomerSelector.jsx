@@ -20,7 +20,7 @@ export default function CustomerSelector({ onSelect, selectedCustomer }) {
       const res = await api.get(`/customers?query=${val}`);
       setResults(res.data);
     } catch (err) {
-      console.error('Customer search failed');
+      console.error('Customer search failed', err);
     }
   };
 

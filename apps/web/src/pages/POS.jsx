@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Scan, Search, Plus, Minus, Trash2, X, Check, Printer, User } from 'lucide-react';
+import { ShoppingCart, Scan, Search, Plus, Minus, Trash2, User } from 'lucide-react';
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -58,6 +58,7 @@ export default function POS() {
       setBarcode('');
       showToast(`Added ${response.data.name}`);
     } catch (err) {
+      console.error('Barcode search failed', err);
       showToast('Product not found', 'error');
       setBarcode('');
     }
@@ -73,7 +74,7 @@ export default function POS() {
       const response = await api.get(`/products?search=${query}`);
       setSearchResults(response.data);
     } catch (err) {
-      console.error('Search failed');
+      console.error('Search failed', err);
     }
   };
 

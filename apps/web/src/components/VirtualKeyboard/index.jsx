@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useKeyboardStore } from '../../store/keyboardStore';
 import QwertyLayout from './QwertyLayout';
 import NumpadLayout from './NumpadLayout';
@@ -35,7 +35,7 @@ const VirtualKeyboard = () => {
       }
     };
 
-    const handleFocusOut = (e) => {
+    const handleFocusOut = () => {
       // Small delay to check if we are focusing another input or just blurring
       setTimeout(() => {
         if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {

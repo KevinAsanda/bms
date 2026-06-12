@@ -1,6 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useKeyboardStore } from '../../store/keyboardStore';
 import { Delete, ArrowUpCircle, XCircle } from 'lucide-react';
+
+const KeyButton = ({ children, onClick, className = '', isSpecial = false }) => (
+  <button
+    onClick={onClick}
+    className={`
+      flex items-center justify-center
+      min-h-[44px] min-w-[44px]
+      m-[2px]
+      text-lg font-medium
+      bg-white
+      active:bg-gray-200
+      border border-[var(--color-border-default)]
+      shadow-sm
+      transition-colors
+      ${isSpecial ? 'bg-gray-100 text-[var(--color-brand-red)]' : 'text-[var(--color-brand-black)]'}
+      ${className}
+    `}
+    style={{ borderRadius: 0 }} // Intentionally square per design docs
+  >
+    {children}
+  </button>
+);
 
 const QwertyLayout = () => {
   const { typeKey, backspace, clear } = useKeyboardStore();
@@ -20,28 +42,6 @@ const QwertyLayout = () => {
   const handleShiftClick = () => {
     setIsShifted(!isShifted);
   };
-
-  const KeyButton = ({ children, onClick, className = '', isSpecial = false }) => (
-    <button
-      onClick={onClick}
-      className={`
-        flex items-center justify-center
-        min-h-[44px] min-w-[44px]
-        m-[2px]
-        text-lg font-medium
-        bg-white
-        active:bg-gray-200
-        border border-[var(--color-border-default)]
-        shadow-sm
-        transition-colors
-        ${isSpecial ? 'bg-gray-100 text-[var(--color-brand-red)]' : 'text-[var(--color-brand-black)]'}
-        ${className}
-      `}
-      style={{ borderRadius: 0 }} // Intentionally square per design docs
-    >
-      {children}
-    </button>
-  );
 
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto space-y-1">

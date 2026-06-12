@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Users, UserPlus, Shield, UserMinus, Key, Mail, CheckCircle, XCircle } from 'lucide-react';
 import api from '../api/axios';
 
@@ -15,20 +15,21 @@ export default function Admin() {
     role: 'CASHIER'
   });
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await api.get('/employees');
       setEmployees(response.data);
     } catch (err) {
+      console.error('Failed to load staff list', err);
       setError('Failed to load staff list');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,6 +70,7 @@ export default function Admin() {
         }
         fetchEmployees();
       } catch (err) {
+        console.error('Failed to update status', err);
         alert('Failed to update status');
       }
     }

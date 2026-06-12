@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Package, Search, Plus, LayoutGrid, List, History as HistoryIcon } from 'lucide-react';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
@@ -24,33 +24,35 @@ export default function Inventory() {
   
   const user = useAuthStore((state) => state.user);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
-    setLoading(true);
-    await Promise.all([fetchProducts(), fetchCategories()]);
-    setLoading(false);
-  };
-
-  const fetchProducts = async (searchTerm = search) => {
+  const fetchProducts = useCallback(async (searchTerm = search) => {
     try {
       const response = await api.get(`/products?search=${searchTerm}`);
       setProducts(response.data);
     } catch (err) {
-      console.error('Failed to fetch products');
+      console.error('Failed to fetch products', err);
     }
-  };
+  }, [search]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get('/categories');
       setCategories(response.data);
     } catch (err) {
-      console.error('Failed to fetch categories');
+      console.error('Failed to fetch categories', err);
     }
-  };
+  }, []);
+
+  const fetchInitialData = useCallback(async () => {
+    // yield execution to the microtask queue to avoid synchronous setState warnings inside useEffect
+    await Promise.resolve();
+    setLoading(true);
+    await Promise.all([fetchProducts(), fetchCategories()]);
+    setLoading(false);
+  }, [fetchProducts, fetchCategories]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const handleProductSubmit = async (data) => {
     try {
@@ -82,6 +84,7 @@ export default function Inventory() {
       await api.patch(`/products/${id}/archive`);
       fetchProducts();
     } catch (err) {
+      console.error('Failed to archive product', err);
       alert('Failed to archive product');
     }
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   FileText, 
   Calendar, 
@@ -18,11 +18,9 @@ export default function Reports() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchReport();
-  }, [reportDate]);
-
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
+    // yield execution to the microtask queue to avoid synchronous setState warnings inside useEffect
+    await Promise.resolve();
     setLoading(true);
     try {
       const [salesRes, catRes] = await Promise.all([
@@ -32,11 +30,15 @@ export default function Reports() {
       setData(salesRes.data);
       setCategories(catRes.data);
     } catch (err) {
-      console.error('Report fetch failed');
+      console.error('Report fetch failed', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [reportDate]);
+
+  useEffect(() => {
+    fetchReport();
+  }, [fetchReport]);
 
   if (loading && !data) return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">

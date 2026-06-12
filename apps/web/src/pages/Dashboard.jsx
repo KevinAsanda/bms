@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, 
   ShoppingCart, 
@@ -21,25 +21,27 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchStats();
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(fetchStats, 300000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
+    // yield execution to the microtask queue to avoid synchronous setState warnings inside useEffect
+    await Promise.resolve();
     setRefreshing(true);
     try {
       const res = await api.get('/reports/dashboard');
       setData(res.data);
     } catch (err) {
-      console.error('Dashboard load failed');
+      console.error('Dashboard load failed', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    // Auto-refresh every 5 minutes
+    const interval = setInterval(fetchStats, 300000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
 
   // Generate chart data based on recent sales
   const getChartData = () => {
