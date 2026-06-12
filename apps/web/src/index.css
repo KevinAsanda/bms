@@ -427,3 +427,48 @@ h1, h2, h3, h4, h5, h6 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Navigation Sidebar Styles */
+.sidebar {
+  background: var(--color-brand-black);
+  color: var(--color-text-on-red);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) 0;
+  width: 240px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+.sidebar-logo {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: var(--space-4);
+}
+.sidebar-logo img {
+  height: 48px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 120ms ease;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+.nav-item.active {
+  background: rgba(194, 19, 34, 0.15);
+  color: white;
+  border-left-color: var(--color-brand-red);
+  font-weight: 600;
+}
