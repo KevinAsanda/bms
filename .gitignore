@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Local env files
+.env
+.env*.local
+
+# IDE / Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project-specific folders to ignore
+/.agents/
+/.playwright-mcp/
+/docs/
+
+# Design assets and screenshots in root to ignore
+/Screenshot.png.jpg
+/Icon Only - Favicon (2).svg
+/Icon Only - Favicon.svg
+/Wordmark Only.svg
+/dashboard_design.png
+/inventory_design.png
+/login_design.png
+/login_design_fixed.png
+/pos_design.png
+
+# Ignore session / cache files
+supabase/.temp/
+
+# Ignore markdown files except README.md
+/*.md
+!/README.md
