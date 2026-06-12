@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useKeyboardStore } from '../../store/keyboardStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import QwertyLayout from './QwertyLayout';
 import NumpadLayout from './NumpadLayout';
 
 const VirtualKeyboard = () => {
   const { isOpen, keyboardType, setActiveInput, closeKeyboard } = useKeyboardStore();
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const { inputMode } = useSettingsStore();
+  const [hardwareTouch, setHardwareTouch] = useState(false);
 
-  // Check for touch capability
+  // Check for hardware touch capability
   useEffect(() => {
     const checkTouch = () => {
-      setIsTouchDevice(
+      setHardwareTouch(
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
         navigator.msMaxTouchPoints > 0
@@ -21,50 +23,49 @@ const VirtualKeyboard = () => {
     return () => window.removeEventListener('resize', checkTouch);
   }, []);
 
-  // Global focus listener
+  const isKeyboardActive = inputMode === 'touch' || (inputMode === 'mouse' && hardwareTouch);
+
+  // Global click/touch listener to open/close keyboard on explicit input interactions
   useEffect(() => {
-    const handleFocusIn = (e) => {
-      if (!isTouchDevice) return; // Only trigger on touch devices
+    const handleInteraction = (e) => {
+      if (!isKeyboardActive) return;
 
       const target = e.target;
+      
+      // If the interaction is inside the keyboard container, ignore it to prevent closure
+      const keyboardEl = document.getElementById('virtual-keyboard-container');
+      if (keyboardEl && keyboardEl.contains(target)) {
+        return;
+      }
+
       if (
         target.tagName === 'INPUT' &&
         !['checkbox', 'radio', 'button', 'submit', 'color', 'file', 'image', 'reset', 'hidden', 'date'].includes(target.type)
       ) {
+        // Tapped/clicked an input field -> open/update keyboard
         setActiveInput(target);
+      } else {
+        // Tapped/clicked outside input and outside keyboard -> close keyboard
+        closeKeyboard();
       }
     };
 
-    const handleFocusOut = () => {
-      // Small delay to check if we are focusing another input or just blurring
-      setTimeout(() => {
-        if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
-          // If we tap outside, but not on another input, we might want to keep it open until "Done" or click outside?
-          // Actually, if we tap outside, close it. But clicking the keyboard itself might trigger blur.
-          // The keyboard container will prevent default on mouse down.
-        }
-      }, 50);
-    };
-
-    document.addEventListener('focusin', handleFocusIn);
-    document.addEventListener('focusout', handleFocusOut);
+    document.addEventListener('mousedown', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
 
     return () => {
-      document.removeEventListener('focusin', handleFocusIn);
-      document.removeEventListener('focusout', handleFocusOut);
+      document.removeEventListener('mousedown', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
     };
-  }, [isTouchDevice, setActiveInput]);
+  }, [isKeyboardActive, setActiveInput, closeKeyboard]);
 
-  if (!isOpen || !isTouchDevice) return null;
+  if (!isOpen || !isKeyboardActive) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] animate-slideUp">
-      {/* Invisible backdrop to catch clicks outside and close */}
-      <div
-        className="fixed inset-0 z-[-1]"
-        onClick={closeKeyboard}
-      />
-
+    <div 
+      id="virtual-keyboard-container" 
+      className="fixed inset-x-0 bottom-0 z-[100] animate-slideUp"
+    >
       <div
         className="bg-[#F7F4F2] border-t border-[var(--color-border-default)] shadow-[var(--shadow-lg)] p-2 pb-safe w-full"
         onMouseDown={(e) => e.preventDefault()} // Prevent clicking keyboard from taking focus away from input

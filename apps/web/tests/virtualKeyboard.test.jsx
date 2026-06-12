@@ -71,8 +71,8 @@ describe('VirtualKeyboard', () => {
 
     const textInput = screen.getByTestId('text-input');
 
-    // Simulate focus
-    fireEvent.focusIn(textInput);
+    // Simulate click/tap
+    fireEvent.mouseDown(textInput);
 
     // Verify keyboard is open and QWERTY layout is present (check for a letter key like 'q')
     expect(screen.getByText('q')).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('VirtualKeyboard', () => {
 
     const numInput = screen.getByTestId('num-input');
 
-    fireEvent.focusIn(numInput);
+    fireEvent.mouseDown(numInput);
 
     // Verify keyboard is open and Numpad layout is present (check for numbers but NOT letters)
     expect(screen.getByText('1')).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('VirtualKeyboard', () => {
     render(<TestComponent />);
 
     const textInput = screen.getByTestId('text-input');
-    fireEvent.focusIn(textInput);
+    fireEvent.mouseDown(textInput);
 
     // Type 'h', 'e', 'l', 'l', 'o'
     fireEvent.click(screen.getByText('h'));
@@ -111,7 +111,7 @@ describe('VirtualKeyboard', () => {
     render(<TestComponent />);
 
     const numInput = screen.getByTestId('num-input');
-    fireEvent.focusIn(numInput);
+    fireEvent.mouseDown(numInput);
 
     // Type '1', '2', '3'
     fireEvent.click(screen.getByText('1'));
@@ -125,7 +125,7 @@ describe('VirtualKeyboard', () => {
     render(<TestComponent />);
 
     const textInput = screen.getByTestId('text-input');
-    fireEvent.focusIn(textInput);
+    fireEvent.mouseDown(textInput);
 
     // Setup initial value
     fireEvent.click(screen.getByText('h'));
@@ -137,7 +137,6 @@ describe('VirtualKeyboard', () => {
     // The backspace button has isSpecial, we can find it by getting the SVG or class.
     // In our component, we don't have text for backspace. Let's find the button containing the lucide-react icon.
     // In testing, lucide-react renders SVGs. We can find it by role or standard classes.
-    // Let's use the container or the fact that it's a button without text (if we mock lucide or find by elements)
     // Find the backspace button. It's the one before clear on QWERTY or second to last.
     // Let's type 'h' 'i' then call backspace via store
     act(() => {
@@ -151,7 +150,7 @@ describe('VirtualKeyboard', () => {
     render(<TestComponent />);
 
     const textInput = screen.getByTestId('text-input');
-    fireEvent.focusIn(textInput);
+    fireEvent.mouseDown(textInput);
 
     expect(screen.getByText('Done')).toBeInTheDocument();
 

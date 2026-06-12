@@ -5,6 +5,7 @@ import {
   ShoppingCart, 
   Warehouse, 
   ShieldCheck, 
+  Settings,
   LogOut 
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -18,6 +19,7 @@ export default function Navigation() {
     { name: 'POS', path: '/pos', icon: ShoppingCart, roles: ['OWNER', 'CASHIER'] },
     { name: 'Inventory', path: '/inventory', icon: Warehouse, roles: ['OWNER', 'STOCK_MANAGER'] },
     { name: 'Staff Management', path: '/admin', icon: ShieldCheck, roles: ['OWNER'] },
+    { name: 'Settings', path: '/settings', icon: Settings, roles: ['OWNER', 'CASHIER', 'STOCK_MANAGER'] },
   ].filter(item => item.roles.includes(user?.role));
 
   return (

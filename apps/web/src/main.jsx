@@ -7,6 +7,7 @@ import POS from './pages/POS'
 import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
 import Admin from './pages/Admin'
+import Settings from './pages/Settings'
 import ProtectedRoute from './components/ProtectedRoute'
 import VirtualKeyboard from './components/VirtualKeyboard'
 import './index.css'
@@ -14,7 +15,6 @@ import './index.css'
 // Global Error Catch for Debugging
 window.addEventListener('error', (event) => {
   console.error('Unhandled Runtime Error:', event.error);
-  // alert(`Critical UI Error: ${event.error?.message || 'Check console for details'}`);
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -45,6 +45,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/reports" element={
           <ProtectedRoute allowedRoles={['OWNER']}>
             <Reports />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute allowedRoles={['OWNER', 'CASHIER', 'STOCK_MANAGER']}>
+            <Settings />
           </ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/login" />} />
