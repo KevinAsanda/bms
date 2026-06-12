@@ -30,6 +30,7 @@ enum StockAdjustmentReason {
   COUNTING_ERROR
   THEFT
   DAMAGE
+  DELIVERY
   OTHER
 }
 
