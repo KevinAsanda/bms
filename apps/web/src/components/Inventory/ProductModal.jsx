@@ -88,7 +88,8 @@ export default function ProductModal({ isOpen, onClose, onSubmit, editingProduct
                   step="0.01" 
                   defaultValue={editingProduct?.pricePerUnit} 
                   required 
-                  className="input pl-9 pr-4 font-mono font-semibold" 
+                  className="input pr-4 font-mono font-semibold" 
+                  style={{ paddingLeft: '2.25rem' }}
                   placeholder="0.00" 
                 />
               </div>

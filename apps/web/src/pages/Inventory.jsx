@@ -160,7 +160,8 @@ export default function Inventory() {
               <input
                 type="text"
                 placeholder="Search products or scan barcode..."
-                className="input pl-12"
+                className="input"
+                style={{ paddingLeft: '3rem' }}
                 value={search}
                 onChange={handleSearchChange}
               />
