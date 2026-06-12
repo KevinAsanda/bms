@@ -24,7 +24,7 @@ export default function Navigation() {
     <aside className="sidebar">
       {/* Logo Area */}
       <div className="sidebar-logo flex items-center gap-3">
-        <img src="/logo-icon.svg" alt="Simon Family Farm Mascot" />
+        <img src="/logo-icon.svg" alt="Simon Family Farm Mascot" style={{ height: '56px', width: '56px' }} className="object-contain" />
         <div>
           <h2 className="text-white text-md font-bold leading-none tracking-tight font-[var(--font-display)] m-0">SIMON FARM</h2>
           <span className="text-[10px] text-gray-400 font-medium tracking-wider">BUTCHERY BMS</span>
@@ -61,9 +61,10 @@ export default function Navigation() {
         
         <button 
           onClick={logout}
-          className="btn-secondary btn-sm w-full text-white border-gray-700 hover:bg-gray-800 hover:border-gray-600 flex items-center justify-center gap-2"
+          className="w-full hover:bg-gray-800 hover:border-gray-600 flex items-center justify-center gap-2 py-2 border border-gray-700 transition-colors"
+          style={{ color: '#ffffff', backgroundColor: 'transparent', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}
         >
-          <LogOut size={16} />
+          <LogOut size={16} style={{ color: '#ffffff' }} />
           <span>Sign Out</span>
         </button>
       </div>

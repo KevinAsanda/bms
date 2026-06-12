@@ -73,7 +73,8 @@ export default function CustomerSelector({ onSelect, selectedCustomer }) {
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
           <input 
-            className="input pl-12 pr-12 font-semibold"
+            className="input font-semibold"
+            style={{ paddingLeft: '3rem', paddingRight: '3rem' }}
             placeholder="Search customer by name or phone..."
             value={query}
             onChange={e => handleSearch(e.target.value)}
@@ -131,7 +132,8 @@ export default function CustomerSelector({ onSelect, selectedCustomer }) {
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={14} />
                 <input 
-                  className="input pl-9 pr-3 py-2 text-sm font-mono"
+                  className="input pr-3 py-2 text-sm font-mono"
+                  style={{ paddingLeft: '2.25rem' }}
                   placeholder="0821234567"
                   maxLength={10}
                   value={newPhone}

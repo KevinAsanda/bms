@@ -23,7 +23,20 @@ export default function POS() {
   // Focus the invisible barcode input on mount and keep it focused
   useEffect(() => {
     barcodeRef.current?.focus();
-    const handleFocus = () => barcodeRef.current?.focus();
+    const handleFocus = (e) => {
+      // Do not steal focus if the click was inside an input, textarea, select, button, link, or active button role
+      if (
+        e.target.tagName === 'INPUT' || 
+        e.target.tagName === 'TEXTAREA' || 
+        e.target.tagName === 'SELECT' || 
+        e.target.closest('button') ||
+        e.target.closest('a') ||
+        e.target.closest('[role="button"]')
+      ) {
+        return;
+      }
+      barcodeRef.current?.focus();
+    };
     document.addEventListener('click', handleFocus);
     return () => {
       document.removeEventListener('click', handleFocus);
