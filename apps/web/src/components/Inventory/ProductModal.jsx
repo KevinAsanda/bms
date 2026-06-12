@@ -22,7 +22,7 @@ export default function ProductModal({ isOpen, onClose, onSubmit, editingProduct
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-[var(--color-surface-card)] border border-[var(--color-border-default)] rounded-md w-full max-w-lg shadow-lg overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="p-6 border-b border-[var(--color-border-default)] flex items-center justify-between">
-          <h2 className="text-xl font-bold font-[var(--font-display)] uppercase m-0 text-black">
+          <h2 className="text-xl font-bold font-[var(--font-display)] uppercase m-0 text-[var(--color-text-primary)]">
             {editingProduct ? 'Edit Product' : 'Add New Product'}
           </h2>
           <button onClick={onClose} className="btn-ghost p-1 text-[var(--color-text-secondary)]">

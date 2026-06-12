@@ -120,31 +120,34 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Primary Metrics Grid (4 cards as per DESIGN.md §6.2) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           label="Today's Revenue" 
           value={`R ${parseFloat(data.today.revenue).toFixed(2)}`} 
           subValue={`Month: R ${parseFloat(data.monthRevenue).toFixed(2)}`}
           icon={TrendingUp}
+          delay={0}
         />
         <StatCard 
           label="Sales Count" 
           value={data.today.count} 
           subValue="Transactions completed today"
           icon={ShoppingCart}
+          delay={75}
         />
         <StatCard 
           label="Low Stock Alerts" 
           value={data.lowStock.length} 
           subValue="Items requiring attention"
           icon={AlertTriangle}
+          delay={150}
         />
         <StatCard 
           label="Top Product" 
           value={data.topProduct ? data.topProduct.name : 'N/A'} 
           subValue={data.topProduct ? `${data.topProduct.quantity} units sold today` : 'No sales recorded'}
           icon={Award}
+          delay={225}
         />
       </div>
 
@@ -233,7 +236,7 @@ export default function Dashboard() {
                       <td className="text-xs font-semibold text-[var(--color-text-secondary)]">
                         {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
-                      <td className="font-bold text-[var(--color-brand-black)]">{sale.employee.name}</td>
+                      <td className="font-bold text-[var(--color-text-primary)]">{sale.employee.name}</td>
                       <td>
                         <div className="flex items-center gap-2">
                           {sale.paymentMethod === 'CASH' && <Banknote size={14} className="text-[var(--color-success)]" />}
@@ -266,21 +269,25 @@ export default function Dashboard() {
                 <p className="text-sm font-bold text-[var(--color-success)] m-0">All stock levels healthy</p>
               </div>
             ) : (
-              data.lowStock.map(item => (
+              data.lowStock.map((item, idx) => (
                 <div 
                   key={item.id} 
-                  className="bg-[var(--color-surface-card)] border-l-4 border-l-[var(--color-brand-red)] border border-[var(--color-border-default)] p-4 rounded-md flex justify-between items-center hover:bg-[var(--color-surface-raised)] transition-all"
+                  className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] p-4 rounded-md flex justify-between items-center hover:bg-[var(--color-surface-raised)] transition-all group animate-in fade-in slide-in-from-right-4 duration-300 fill-mode-both"
+                  style={{ animationDelay: `${idx * 50}ms` }}
                 >
-                  <div>
-                    <p className="font-bold text-sm text-[var(--color-brand-black)] m-0 uppercase tracking-tight">
-                      {item.product.name}
-                    </p>
-                    <span className="text-[9px] font-bold text-[var(--color-text-secondary)] uppercase block mt-1">
-                      Min Threshold: {parseFloat(item.lowThreshold)} kg
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-[var(--color-danger)] animate-pulse" />
+                    <div>
+                      <p className="font-bold text-sm text-[var(--color-text-primary)] m-0 uppercase tracking-tight">
+                        {item.product.name}
+                      </p>
+                      <span className="text-[9px] font-bold text-[var(--color-text-secondary)] uppercase block mt-1">
+                        Min Threshold: {parseFloat(item.lowThreshold)} kg
+                      </span>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono font-bold text-[var(--color-brand-red)] text-md m-0">
+                    <p className="font-mono font-bold text-[var(--color-danger)] text-md m-0">
                       {parseFloat(item.quantity)} kg
                     </p>
                     <span className="text-[9px] font-bold text-[var(--color-text-secondary)] uppercase">
@@ -301,22 +308,27 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, subValue, icon: Icon }) {
+function StatCard({ label, value, subValue, icon: Icon, delay }) {
   return (
-    <div className="card card-accent p-6 flex flex-col justify-between min-h-[140px] hover:border-[var(--color-brand-red)]/50 transition-all bg-[var(--color-surface-card)]">
-      <div className="flex justify-between items-start">
-        <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] font-[var(--font-display)]">
-          {label}
-        </span>
-        <Icon size={18} className="text-[var(--color-brand-red)]" />
-      </div>
-      <div className="mt-4">
-        <h3 className="text-3xl font-[var(--font-mono)] font-bold tracking-tight text-[var(--color-brand-black)] m-0">
-          {value}
-        </h3>
-        <p className="text-[10px] font-semibold text-[var(--color-text-muted)] mt-2 mb-0 uppercase">
-          {subValue}
-        </p>
+    <div 
+      className="bg-[var(--color-surface-raised)] p-1.5 rounded-lg border border-[var(--color-border-default)] transition-all hover:border-[var(--color-brand-red)]/35 group animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="bg-[var(--color-surface-card)] p-5 rounded-[calc(8px-6px)] flex flex-col justify-between min-h-[140px] shadow-sm relative overflow-hidden">
+        <div className="flex justify-between items-start">
+          <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em] font-[var(--font-display)]">
+            {label}
+          </span>
+          <Icon size={18} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-brand-red)] transition-colors duration-200" />
+        </div>
+        <div className="mt-4">
+          <h3 className="text-3xl font-[var(--font-mono)] font-bold tracking-tight text-[var(--color-text-primary)] m-0 tabular-nums">
+            {value}
+          </h3>
+          <p className="text-[10px] font-semibold text-[var(--color-text-muted)] mt-2 mb-0 uppercase">
+            {subValue}
+          </p>
+        </div>
       </div>
     </div>
   );

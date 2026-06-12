@@ -74,10 +74,10 @@ export default function Reports() {
 
       {/* Summary Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <MetricBox label="Daily Revenue" value={`R ${data.totalRevenue.toFixed(2)}`} icon={TrendingUp} />
-        <MetricBox label="Cash Payment" value={`R ${data.CASH.toFixed(2)}`} icon={Banknote} />
-        <MetricBox label="Card Payment" value={`R ${data.CARD.toFixed(2)}`} icon={CreditCard} />
-        <MetricBox label="EFT Payment" value={`R ${data.EFT.toFixed(2)}`} icon={Wallet} />
+        <MetricBox label="Daily Revenue" value={`R ${data.totalRevenue.toFixed(2)}`} icon={TrendingUp} delay={0} />
+        <MetricBox label="Cash Payment" value={`R ${data.CASH.toFixed(2)}`} icon={Banknote} delay={75} />
+        <MetricBox label="Card Payment" value={`R ${data.CARD.toFixed(2)}`} icon={CreditCard} delay={150} />
+        <MetricBox label="EFT Payment" value={`R ${data.EFT.toFixed(2)}`} icon={Wallet} delay={225} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -137,7 +137,7 @@ export default function Reports() {
                     <td className="text-xs font-semibold text-[var(--color-text-secondary)]">
                       {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="font-bold text-[var(--color-brand-black)]">{sale.employee.name}</td>
+                    <td className="font-bold text-[var(--color-text-primary)]">{sale.employee.name}</td>
                     <td>
                       <span className="badge badge-steel">
                         {sale.items.length} lines
@@ -165,18 +165,23 @@ export default function Reports() {
   );
 }
 
-function MetricBox({ label, value, icon: Icon }) {
+function MetricBox({ label, value, icon: Icon, delay }) {
   return (
-    <div className="card card-accent p-6 flex items-center justify-between bg-[var(--color-surface-card)]">
-      <div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block mb-1">
-          {label}
-        </span>
-        <h3 className="text-xl font-[var(--font-mono)] font-bold tracking-tight text-[var(--color-brand-black)] m-0">
-          {value}
-        </h3>
+    <div 
+      className="bg-[var(--color-surface-raised)] p-1 rounded-lg border border-[var(--color-border-default)] transition-all hover:border-[var(--color-brand-red)]/35 group animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="bg-[var(--color-surface-card)] p-4 rounded-[calc(8px-4px)] flex items-center justify-between shadow-sm relative overflow-hidden">
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-secondary)] block mb-1">
+            {label}
+          </span>
+          <h3 className="text-xl font-[var(--font-mono)] font-bold tracking-tight text-[var(--color-text-primary)] m-0 tabular-nums">
+            {value}
+          </h3>
+        </div>
+        <Icon size={18} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-brand-red)] transition-colors duration-200" />
       </div>
-      <Icon size={18} className="text-[var(--color-brand-red)] opacity-50" />
     </div>
   );
 }

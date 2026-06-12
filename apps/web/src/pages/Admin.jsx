@@ -136,7 +136,7 @@ export default function Admin() {
             {employees.map((emp) => (
               <tr key={emp.id} className="group">
                 <td>
-                  <div className="font-bold text-[var(--color-brand-black)]">{emp.name}</div>
+                  <div className="font-bold text-[var(--color-text-primary)]">{emp.name}</div>
                   <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1 mt-1 font-mono">
                     <Mail size={12} /> {emp.email}
                   </div>
@@ -195,7 +195,7 @@ export default function Admin() {
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] rounded-md w-full max-w-md p-6 shadow-lg animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold mb-6 font-[var(--font-display)] uppercase m-0 text-black">
+            <h2 className="text-xl font-bold mb-6 font-[var(--font-display)] uppercase m-0 text-[var(--color-text-primary)]">
               {editingEmployee ? 'Edit Staff' : 'Add New Staff'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-5">

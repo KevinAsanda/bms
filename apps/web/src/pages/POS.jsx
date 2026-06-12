@@ -107,7 +107,7 @@ export default function POS() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+    <div className="theme-light flex h-[calc(100vh-64px)] overflow-hidden w-full bg-[var(--color-surface-page)] text-[var(--color-text-primary)]">
       {/* Invisible Barcode Input for silent scans */}
       <form onSubmit={handleBarcodeSubmit} className="absolute top-0 left-0 opacity-0 pointer-events-none">
         <input

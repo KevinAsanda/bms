@@ -95,6 +95,20 @@
   --color-brand-red: #e02030;
 }
 
+/* Force light mode overrides (for POS screen) */
+.theme-light {
+  --color-surface-page: #f7f4f2;
+  --color-surface-card: #ffffff;
+  --color-surface-raised: #edeae8;
+  --color-surface-input: #f2efed;
+  --color-border-default: #d6d0cc;
+  --color-border-strong: #9a9a9c;
+  --color-text-primary: #0c0404;
+  --color-text-secondary: #4a4547;
+  --color-text-muted: #8c8488;
+  --color-brand-red: #c21322;
+}
+
 @theme {
   --color-brand-red: var(--color-brand-red);
   --color-brand-red-deep: var(--color-brand-red-deep);
@@ -171,7 +185,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-primary:active {
   background: var(--color-brand-red-mid);
-  transform: translateY(1px);
+  transform: scale(0.97) translateY(1px);
 }
 .btn-primary:focus-visible {
   outline: 3px solid var(--color-brand-red);
@@ -199,6 +213,9 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary:hover {
   border-color: var(--color-brand-black);
   background: var(--color-surface-raised);
+}
+.btn-secondary:active {
+  transform: scale(0.97) translateY(1px);
 }
 .theme-dark .btn-secondary {
   color: var(--color-text-primary);
@@ -229,6 +246,9 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-danger);
   color: var(--color-text-on-red);
 }
+.btn-danger:active {
+  transform: scale(0.97) translateY(1px);
+}
 
 .btn-ghost {
   background: transparent;
@@ -244,6 +264,9 @@ h1, h2, h3, h4, h5, h6 {
 .btn-ghost:hover {
   background: var(--color-surface-raised);
   color: var(--color-text-primary);
+}
+.btn-ghost:active {
+  transform: scale(0.95);
 }
 
 .btn-sm {

@@ -25,7 +25,7 @@ export default function ProductTable({ products, user, onEdit, onArchive, onAdju
           ) : (
             products.map((product) => (
               <tr key={product.id} className="group">
-                <td className="font-bold text-[var(--color-brand-black)]">{product.name}</td>
+                <td className="font-bold text-[var(--color-text-primary)]">{product.name}</td>
                 <td className="font-mono text-xs text-[var(--color-text-secondary)]">{product.barcode}</td>
                 <td>
                   <span className="badge badge-steel">
