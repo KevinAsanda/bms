@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
 import Admin from './pages/Admin'
 import Navigation from './components/Navigation'
+import VirtualKeyboard from './components/VirtualKeyboard'
 import './index.css'
 import { useAuthStore } from './store/authStore'
 
@@ -65,6 +66,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         } />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
+      <VirtualKeyboard />
     </BrowserRouter>
   </React.StrictMode>,
 )
