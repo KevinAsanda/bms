@@ -8,6 +8,8 @@ export const useCartStore = create((set, get) => ({
     const existingItem = items.find((item) => item.productId === product.id);
     
     if (existingItem) {
+      // For weight-based products, let cashier add more items, but typically they change weight. 
+      // If cashier scans again, increment qty by 1.
       set({
         items: items.map((item) =>
           item.productId === product.id
@@ -24,9 +26,10 @@ export const useCartStore = create((set, get) => ({
             name: product.name,
             barcode: product.barcode,
             unitPrice: parseFloat(product.pricePerUnit),
-            unitType: product.unitType,
+            pricingType: product.pricingType,
+            unit: product.unit,
             quantity: 1,
-            weightKg: product.unitType === 'per_kg' ? 0 : null,
+            weightKg: product.pricingType === 'WEIGHT_BASED' ? 0 : null,
           },
         ],
       });
@@ -63,7 +66,7 @@ export const useCartStore = create((set, get) => ({
   
   getGrandTotal: () => {
     return get().items.reduce((total, item) => {
-      const lineTotal = item.unitType === 'per_kg'
+      const lineTotal = item.pricingType === 'WEIGHT_BASED'
         ? item.unitPrice * (item.weightKg || 0)
         : item.unitPrice * item.quantity;
       return total + lineTotal;

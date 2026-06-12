@@ -7,109 +7,15 @@ datasource db {
   provider = "postgresql"
 }
 
-model Employee {
-  id           String            @id @default(cuid())
-  name         String
-  email        String            @unique
-  passwordHash String
-  role         Role
-  isActive     Boolean           @default(true)
-  createdAt    DateTime          @default(now())
-  auditLogs    AuditLog[]
-  sales        Sale[]
-  adjustments  StockAdjustment[]
-}
-
-model Customer {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?  @unique
-  createdAt DateTime @default(now())
-  sales     Sale[]
-}
-
-model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  products Product[]
-}
-
-model Product {
-  id           String            @id @default(cuid())
-  name         String
-  barcode      String            @unique
-  categoryId   String
-  pricePerUnit Decimal           @db.Decimal(10, 2)
-  unitType     String
-  isActive     Boolean           @default(true)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  category     Category          @relation(fields: [categoryId], references: [id])
-  saleItems    SaleItem[]
-  stock        Stock?
-  adjustments  StockAdjustment[]
-}
-
-model Stock {
-  id           String   @id @default(cuid())
-  productId    String   @unique
-  quantity     Decimal  @db.Decimal(10, 3)
-  lowThreshold Decimal  @default(0) @db.Decimal(10, 3)
-  updatedAt    DateTime @updatedAt
-  product      Product  @relation(fields: [productId], references: [id])
-}
-
-model Sale {
-  id            String        @id @default(cuid())
-  employeeId    String
-  customerId    String?
-  total         Decimal       @db.Decimal(10, 2)
-  paymentMethod PaymentMethod
-  createdAt     DateTime      @default(now())
-  customer      Customer?     @relation(fields: [customerId], references: [id])
-  employee      Employee      @relation(fields: [employeeId], references: [id])
-  items         SaleItem[]
-}
-
-model SaleItem {
-  id        String   @id @default(cuid())
-  saleId    String
-  productId String
-  quantity  Int
-  weightKg  Decimal? @db.Decimal(10, 3)
-  unitPrice Decimal  @db.Decimal(10, 2)
-  lineTotal Decimal  @db.Decimal(10, 2)
-  product   Product  @relation(fields: [productId], references: [id])
-  sale      Sale     @relation(fields: [saleId], references: [id])
-}
-
-model StockAdjustment {
-  id         String                @id @default(cuid())
-  productId  String
-  employeeId String
-  changeQty  Decimal               @db.Decimal(10, 3)
-  reason     StockAdjustmentReason
-  notes      String?
-  createdAt  DateTime              @default(now())
-  employee   Employee              @relation(fields: [employeeId], references: [id])
-  product    Product               @relation(fields: [productId], references: [id])
-}
-
-model AuditLog {
-  id         String   @id @default(cuid())
-  employeeId String
-  action     String
-  entity     String
-  entityId   String?
-  metadata   Json?
-  createdAt  DateTime @default(now())
-  employee   Employee @relation(fields: [employeeId], references: [id])
-}
-
 enum Role {
   OWNER
   CASHIER
   STOCK_MANAGER
+}
+
+enum PricingType {
+  FIXED        // per packet / each
+  WEIGHT_BASED // per kg
 }
 
 enum PaymentMethod {
@@ -122,6 +28,163 @@ enum StockAdjustmentReason {
   WASTAGE
   SPOILAGE
   COUNTING_ERROR
-  DELIVERY
+  THEFT
+  DAMAGE
   OTHER
+}
+
+model Employee {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sales             Sale[]
+  stockAdjustments  StockAdjustment[]
+  auditLogs         AuditLog[]
+
+  @@index([email])
+  @@map("employees")
+}
+
+model Customer {
+  id          String    @id @default(cuid())
+  name        String
+  phone       String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sales       Sale[]
+
+  @@index([phone])
+  @@map("customers")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique  // Beef, Chicken, Wors, Pork, Other
+  createdAt DateTime  @default(now())
+
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  name         String
+  barcode      String      @unique
+  pricingType  PricingType
+  pricePerUnit Decimal     @db.Decimal(10, 2)  // per unit OR per kg
+  unit         String      // "kg", "each", "pack"
+  isActive     Boolean     @default(true)
+  categoryId   String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  category     Category    @relation(fields: [categoryId], references: [id])
+  stock        Stock?
+  saleItems    SaleItem[]
+
+  @@index([barcode])
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
+}
+
+model Stock {
+  id           String    @id @default(cuid())
+  productId    String    @unique
+  quantity     Decimal   @db.Decimal(10, 3)  // 3dp for kg precision
+  lowThreshold Decimal   @db.Decimal(10, 3)  @default(2)
+  updatedAt    DateTime  @updatedAt
+
+  product      Product   @relation(fields: [productId], references: [id])
+
+  @@map("stock")
+}
+
+model Sale {
+  id            String        @id @default(cuid())
+  employeeId    String
+  customerId    String?       // nullable — anonymous sales allowed
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  paymentMethod PaymentMethod
+  receiptRef    String        @unique @default(cuid())
+  createdAt     DateTime      @default(now())
+
+  employee      Employee      @relation(fields: [employeeId], references: [id])
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
+
+  @@index([employeeId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String    @id @default(cuid())
+  saleId      String
+  productId   String
+  quantity    Decimal   @db.Decimal(10, 3)
+  weightKg    Decimal?  @db.Decimal(10, 3)  // null for fixed-price items
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  lineTotal   Decimal   @db.Decimal(10, 2)
+
+  sale        Sale      @relation(fields: [saleId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@map("sale_items")
+}
+
+model StockAdjustment {
+  id          String                 @id @default(cuid())
+  productId   String
+  employeeId  String
+  changeQty   Decimal                @db.Decimal(10, 3)  // + for receive, - for correction
+  reason      StockAdjustmentReason
+  notes       String?
+  createdAt   DateTime               @default(now())
+
+  employee    Employee               @relation(fields: [employeeId], references: [id])
+
+  @@index([productId])
+  @@index([createdAt])
+  @@map("stock_adjustments")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  employeeId String
+  action     String   // e.g. "SALE_COMPLETED", "STOCK_ADJUSTED", "PRODUCT_EDITED"
+  entityType String   // e.g. "Sale", "Product", "Employee"
+  entityId   String
+  metadata   Json?    // Stores before/after snapshots
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String?
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("suppliers")
 }

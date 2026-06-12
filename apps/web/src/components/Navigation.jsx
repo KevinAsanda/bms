@@ -1,5 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, ShoppingCart, Package, Users, LogOut } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  BarChart3, 
+  ShoppingCart, 
+  Warehouse, 
+  ShieldCheck, 
+  LogOut 
+} from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Navigation() {
@@ -7,53 +14,59 @@ export default function Navigation() {
   
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['OWNER'] },
-    { name: 'Reports', path: '/reports', icon: FileText, roles: ['OWNER'] },
+    { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['OWNER'] },
     { name: 'POS', path: '/pos', icon: ShoppingCart, roles: ['OWNER', 'CASHIER'] },
-    { name: 'Inventory', path: '/inventory', icon: Package, roles: ['OWNER', 'STOCK_MANAGER'] },
-    { name: 'Staff', path: '/admin', icon: Users, roles: ['OWNER'] },
+    { name: 'Inventory', path: '/inventory', icon: Warehouse, roles: ['OWNER', 'STOCK_MANAGER'] },
+    { name: 'Staff Management', path: '/admin', icon: ShieldCheck, roles: ['OWNER'] },
   ].filter(item => item.roles.includes(user?.role));
 
   return (
-    <nav className="h-16 bg-[var(--color-bg-surface)] border-b border-[var(--color-border)] px-6 flex items-center justify-between sticky top-0 z-40">
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-black font-bold text-sm">B</div>
-          <span className="font-bold font-[var(--font-display)] hidden md:block tracking-tight text-white">BMS</span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `
-                flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all
-                ${isActive 
-                  ? 'text-[var(--color-primary)] bg-[var(--color-bg-elevated)]' 
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-                }
-              `}
-            >
-              <item.icon size={16} />
-              <span className="hidden sm:block">{item.name}</span>
-            </NavLink>
-          ))}
+    <aside className="sidebar">
+      {/* Logo Area */}
+      <div className="sidebar-logo flex items-center gap-3">
+        <img src="/logo-icon.svg" alt="Simon Family Farm Mascot" />
+        <div>
+          <h2 className="text-white text-md font-bold leading-none tracking-tight font-[var(--font-display)] m-0">SIMON FARM</h2>
+          <span className="text-[10px] text-gray-400 font-medium tracking-wider">BUTCHERY BMS</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="text-right hidden sm:block">
-          <p className="text-sm font-bold leading-none">{user?.name}</p>
-          <p className="text-[10px] text-[var(--color-text-secondary)] uppercase tracking-widest font-bold mt-1">{user?.role}</p>
+      {/* Nav Items */}
+      <div className="flex-1 flex flex-col gap-1 px-2">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <item.icon size={20} strokeWidth={1.5} />
+            <span>{item.name}</span>
+          </NavLink>
+        ))}
+      </div>
+
+      {/* User Info / Logout Area at the bottom */}
+      <div className="p-4 border-t border-gray-800 flex flex-col gap-3">
+        <div className="flex items-center gap-3 px-2">
+          <div className="w-8 h-8 rounded-full bg-red-900/40 border border-red-500/30 flex items-center justify-center text-white font-bold font-[var(--font-display)] text-sm">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <div className="overflow-hidden">
+            <p className="text-sm font-semibold leading-none text-white truncate m-0">{user?.name}</p>
+            <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1 block">
+              {user?.role?.replace('_', ' ')}
+            </span>
+          </div>
         </div>
+        
         <button 
           onClick={logout}
-          className="p-2 hover:bg-[var(--color-bg-elevated)] rounded-xl text-[var(--color-text-secondary)] hover:text-[var(--color-error)] transition-colors"
-          title="Logout"
+          className="btn-secondary btn-sm w-full text-white border-gray-700 hover:bg-gray-800 hover:border-gray-600 flex items-center justify-center gap-2"
         >
-          <LogOut size={20} />
+          <LogOut size={16} />
+          <span>Sign Out</span>
         </button>
       </div>
-    </nav>
+    </aside>
   );
 }

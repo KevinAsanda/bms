@@ -1,5 +1,6 @@
 // apps/api/src/controllers/customerController.js
 import { prisma } from '../utils/prisma.js';
+import { encrypt, decrypt } from '../utils/encryption.js';
 import { z } from 'zod';
 
 const customerSchema = z.object({
@@ -10,17 +11,27 @@ const customerSchema = z.object({
 export async function getCustomers(req, res) {
   const { query } = req.query;
   try {
-    const customers = await prisma.customer.findMany({
-      where: query ? {
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { phone: { contains: query } },
-        ],
-      } : undefined,
-      take: 10,
+    // Fetch customers
+    const allCustomers = await prisma.customer.findMany({
+      orderBy: { name: 'asc' },
     });
-    res.json(customers);
+
+    const decryptedCustomers = allCustomers.map(customer => ({
+      ...customer,
+      phone: decrypt(customer.phone)
+    }));
+
+    if (query) {
+      const filtered = decryptedCustomers.filter(customer => 
+        customer.name.toLowerCase().includes(query.toLowerCase()) || 
+        (customer.phone && customer.phone.includes(query))
+      );
+      return res.json(filtered.slice(0, 10));
+    }
+
+    res.json(decryptedCustomers.slice(0, 10));
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch customers' });
   }
 }
@@ -31,15 +42,36 @@ export async function createCustomer(req, res) {
     return res.status(422).json({ errors: parsed.error.flatten() });
   }
 
+  const { name, phone } = parsed.data;
+
   try {
-    const customer = await prisma.customer.create({
-      data: parsed.data,
-    });
-    res.status(201).json(customer);
-  } catch (err) {
-    if (err.code === 'P2002') {
-      return res.status(409).json({ error: 'Phone number already exists' });
+    if (phone) {
+      // Manually check for duplicates since encrypted values are non-deterministic (random IV)
+      const allCustomers = await prisma.customer.findMany({
+        where: { phone: { not: null } }
+      });
+      const duplicate = allCustomers.find(c => decrypt(c.phone) === phone);
+      if (duplicate) {
+        return res.status(409).json({ error: 'Phone number already exists' });
+      }
     }
+
+    // Encrypt phone number before database insertion
+    const encryptedPhone = phone ? encrypt(phone) : null;
+
+    const customer = await prisma.customer.create({
+      data: {
+        name,
+        phone: encryptedPhone
+      },
+    });
+
+    res.status(201).json({
+      ...customer,
+      phone: decrypt(customer.phone)
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to create customer' });
   }
 }

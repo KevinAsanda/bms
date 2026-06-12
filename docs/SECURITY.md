@@ -1,361 +1,754 @@
-# SECURITY.md
-# Butchery Management System — Security Architecture
-> Version 1.0 | Simon Family Farm | June 2026
+# SECURITY.md — Simon Family Farm Butchery Management System
+
+> **Give this file to Gemini CLI whenever generating authentication, API routes, middleware, or any code that handles user data, passwords, tokens, or financial records.**
+> Every security control here is mandatory. Gemini must not skip, simplify, or replace any listed control without explicit written justification.
 
 ---
 
 ## 1. Security Philosophy
 
-The BMS handles financial transactions, employee credentials, and customer personal information. Security is not optional — it is a first-class engineering concern applied at every layer: database, API, and frontend. This document is the authoritative source for all security decisions. **Gemini must consult this file before implementing any authentication, data access, input handling, or data storage feature.**
+The BMS handles financial transaction records, employee credentials, and customer personal information. It runs in a shop environment where multiple people share devices, and where the owner may not have a technical background to detect a breach.
+
+Security is implemented **by default, not by choice**. Every new route, every new field, and every new feature inherits the security baseline below. The burden of proof is on removing a control, not adding one.
+
+**Threat model summary:**
+
+- Insider threat: a cashier accessing owner reports or modifying stock records
+- Credential theft: weak passwords or unencrypted transmission
+- Data breach: customer phone numbers and transaction history exposed
+- Session abuse: a logged-in session left open on a shared tablet
+- Replay attacks: a sale submitted twice
+- API abuse: automated scraping or brute-force attacks
 
 ---
 
-## 2. Threat Model
+## 2. Authentication
 
-| Threat | Vector | Impact | Likelihood |
-|---|---|---|---|
-| Credential theft (staff) | Weak passwords, no lockout | Unauthorized sales / stock manipulation | Medium |
-| Role abuse | Cashier accessing owner reports | Privacy breach, financial exposure | Medium |
-| SQL injection | Unvalidated input to DB queries | Full database compromise | Low (mitigated by Prisma) |
-| XSS | User-supplied data rendered unsanitized | Session hijack, data theft | Low (mitigated by React) |
-| CSRF | Malicious site triggering authenticated API calls | Unauthorized actions | Low (mitigated by JWT in header) |
-| Brute-force login | Automated password guessing | Account takeover | Medium |
-| Insecure direct object reference | `/sales/123` accessed by wrong employee | Data leakage | Medium |
-| Ransomware / device theft | Tablet stolen at counter | Data exposure, business disruption | Low |
-| Insider threat | Employee viewing other's data | Privacy breach | Low |
-| Phishing (owner email) | Fake login page | Credential theft | Low |
+### 2.1 Password Policy
 
----
+Enforced at **both** frontend (react-hook-form + Zod) and backend (Zod middleware). Both must agree.
 
-## 3. Authentication
+```typescript
+// Shared: apps/api/src/schemas/password.schema.ts
+// (imported by both frontend validation and backend middleware)
 
-### 3.1 JWT Implementation
+import { z } from "zod";
 
-```javascript
-// middleware/auth.js — THIS IS THE REQUIRED PATTERN
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(72, "Password too long") // bcrypt max input length
+  .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Must contain at least one special character");
+```
 
-import jwt from 'jsonwebtoken';
+### 2.2 Password Hashing
 
-export function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or malformed token' });
-  }
+```typescript
+// apps/api/src/utils/password.ts
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload;  // { id, role, email }
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Token invalid or expired' });
-  }
+import bcrypt from "bcrypt";
+
+const ROUNDS = parseInt(process.env.BCRYPT_ROUNDS ?? "12");
+
+export async function hashPassword(plain: string): Promise<string> {
+  return bcrypt.hash(plain, ROUNDS);
+}
+
+export async function verifyPassword(
+  plain: string,
+  hash: string,
+): Promise<boolean> {
+  return bcrypt.compare(plain, hash);
 }
 ```
 
 **Rules:**
-- Access tokens expire in **8 hours**
-- Refresh tokens expire in **7 days**, stored as `httpOnly` cookie
-- JWT payload contains ONLY: `{ id, role, email }` — no sensitive data
-- Secret minimum length: **64 random characters**
-- Algorithm: **HS256**
-- Rotation: new access token issued on every refresh
 
-### 3.2 Password Policy (enforced at API level via Zod)
+- Cost factor: minimum `12` in production, `10` acceptable in development only
+- Never log a plain-text password under any circumstances
+- Never return `passwordHash` from any API response — use Prisma `select` to explicitly exclude it
+- Store only the hash — never the plain password, never a reversible cipher
 
-```javascript
-// utils/passwordSchema.js
-import { z } from 'zod';
-
-export const passwordSchema = z
-  .string()
-  .min(8, 'Password must be at least 8 characters')
-  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[0-9]/, 'Password must contain at least one number')
-  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character');
+```typescript
+// ALWAYS exclude passwordHash from queries:
+const employee = await prisma.employee.findUnique({
+  where: { id },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isActive: true,
+    // passwordHash is NEVER included
+  },
+});
 ```
 
-### 3.3 Password Hashing
+### 2.3 JWT Configuration
 
-```javascript
-// REQUIRED: bcrypt cost factor 12 — never store plaintext
-import bcrypt from 'bcrypt';
-const COST_FACTOR = 12;
+```typescript
+// apps/api/src/utils/jwt.ts
 
-export const hashPassword = (plain) => bcrypt.hash(plain, COST_FACTOR);
-export const verifyPassword = (plain, hash) => bcrypt.compare(plain, hash);
+import jwt from "jsonwebtoken";
+
+const SECRET = process.env.JWT_SECRET!; // minimum 64 random characters
+const EXPIRES = process.env.JWT_EXPIRES_IN ?? "8h";
+
+export interface JwtPayload {
+  sub: string; // employee ID
+  role: "OWNER" | "CASHIER" | "STOCK_MANAGER";
+  name: string;
+  iat: number;
+  exp: number;
+}
+
+export function signToken(payload: Omit<JwtPayload, "iat" | "exp">): string {
+  return jwt.sign(payload, SECRET, {
+    expiresIn: EXPIRES,
+    algorithm: "HS256",
+  });
+}
+
+export function verifyToken(token: string): JwtPayload {
+  return jwt.verify(token, SECRET) as JwtPayload;
+  // throws JsonWebTokenError if invalid, TokenExpiredError if expired
+}
 ```
 
-### 3.4 Brute-Force Protection
+**Rules:**
 
-```javascript
-// middleware/rateLimiter.js
-import rateLimit from 'express-rate-limit';
+- `JWT_SECRET` must be at least 64 randomly-generated characters
+- Generate with: `openssl rand -hex 64`
+- Never hardcode `JWT_SECRET` — always from environment variable
+- Tokens expire after 8 hours (one business day maximum)
+- Token is sent in `Authorization: Bearer <token>` header only — **never in a URL query string, never in a cookie without `HttpOnly` + `Secure` + `SameSite=Strict`**
 
-export const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 5,                      // 5 attempts
-  message: { error: 'Too many login attempts. Account locked for 15 minutes.' },
+### 2.4 Brute-Force Login Protection
+
+```typescript
+// apps/api/src/middleware/rateLimiter.ts
+
+import rateLimit from "express-rate-limit";
+
+// Global rate limit — all routes
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
+  message: { error: "Too many requests. Please try again later." },
 });
 
-// Apply to login route ONLY: router.post('/auth/login', loginLimiter, loginController)
+// Strict limit — login endpoint only
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // 5 attempts per 15 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // count only failures
+  message: {
+    error: "Too many failed login attempts. Account temporarily locked.",
+  },
+});
+```
+
+### 2.5 Session Expiry
+
+```typescript
+// apps/web/src/features/auth/useAuth.ts
+
+// Auto-logout after 30 minutes of inactivity
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+let timer: ReturnType<typeof setTimeout>;
+
+function resetTimer(logout: () => void) {
+  clearTimeout(timer);
+  timer = setTimeout(logout, INACTIVITY_TIMEOUT);
+}
+
+// Attach to: mousemove, keypress, touchstart, click
+["mousemove", "keypress", "touchstart", "click"].forEach((event) => {
+  window.addEventListener(event, () => resetTimer(logout), { passive: true });
+});
 ```
 
 ---
 
-## 4. Role-Based Access Control (RBAC)
+## 3. Authorization — Role-Based Access Control
 
-### 4.1 Role Definitions
+### 3.1 Role Matrix
 
-| Role | What They Can Access |
-|---|---|
-| `OWNER` | Everything: all reports, all admin, all POS, employee management |
-| `CASHIER` | POS screen only: product lookup, cart, checkout, receipt |
-| `STOCK_MANAGER` | Inventory: stock levels, delivery receiving, manual adjustments |
+| Capability                   | Owner | Cashier | Stock Manager |
+| ---------------------------- | :---: | :-----: | :-----------: |
+| Login                        |  ✅   |   ✅    |      ✅       |
+| View POS / process sales     |  ✅   |   ✅    |      ❌       |
+| View products                |  ✅   |   ✅    |      ✅       |
+| Create / edit products       |  ✅   |   ❌    |      ❌       |
+| Archive products             |  ✅   |   ❌    |      ❌       |
+| View stock levels            |  ✅   |   ❌    |      ✅       |
+| Receive delivery (add stock) |  ✅   |   ❌    |      ✅       |
+| Manual stock correction      |  ✅   |   ❌    |      ✅       |
+| View stock adjustment log    |  ✅   |   ❌    |      ❌       |
+| View / search customers      |  ✅   |   ✅    |      ❌       |
+| Create customer record       |  ✅   |   ✅    |      ❌       |
+| View customer history        |  ✅   |   ❌    |      ❌       |
+| View daily sales report      |  ✅   |   ❌    |      ❌       |
+| View cash-up summary         |  ✅   |   ❌    |      ❌       |
+| View employee activity       |  ✅   |   ❌    |      ❌       |
+| Create / manage employees    |  ✅   |   ❌    |      ❌       |
+| Reset staff passwords        |  ✅   |   ❌    |      ❌       |
+| View audit logs              |  ✅   |   ❌    |      ❌       |
+| Change own password          |  ✅   |   ✅    |      ✅       |
+| Toggle dark mode             |  ✅   |   ❌    |      ❌       |
 
-### 4.2 RBAC Middleware
+### 3.2 Middleware Implementation
 
-```javascript
-// middleware/rbac.js — apply AFTER authMiddleware on every protected route
+```typescript
+// apps/api/src/middleware/authenticate.ts
 
-export function rbacMiddleware(...allowedRoles) {
-  return (req, res, next) => {
-    if (!allowedRoles.includes(req.user.role)) {
+import { Request, Response, NextFunction } from "express";
+import { verifyToken, JwtPayload } from "../utils/jwt";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+    }
+  }
+}
+
+export function authenticate(req: Request, res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  const token = header.slice(7);
+  try {
+    req.user = verifyToken(token);
+    next();
+  } catch {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
+```
+
+```typescript
+// apps/api/src/middleware/authorize.ts
+
+import { Request, Response, NextFunction } from "express";
+import type { Role } from "@prisma/client";
+
+export function authorize(...roles: Role[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    if (!roles.includes(req.user.role as Role)) {
       return res.status(403).json({
-        error: `Access denied. Required role: ${allowedRoles.join(' or ')}`
+        error: "You do not have permission to perform this action",
       });
     }
     next();
   };
 }
 
-// Usage:
-// router.get('/reports/daily', authMiddleware, rbacMiddleware('OWNER'), dailyReportController);
+// Usage in routes:
+// router.get('/reports/daily', authenticate, authorize('OWNER'), getDaily);
+// router.post('/stock/adjust', authenticate, authorize('OWNER','STOCK_MANAGER'), adjustStock);
 ```
-
-### 4.3 Route Permission Matrix
-
-| Route | OWNER | CASHIER | STOCK_MANAGER |
-|---|---|---|---|
-| POST /auth/login | ✅ | ✅ | ✅ |
-| POST /auth/reset-password | ✅ | ❌ | ❌ |
-| GET /products | ✅ | ✅ | ✅ |
-| POST /products | ✅ | ❌ | ❌ |
-| PUT /products/:id | ✅ | ❌ | ❌ |
-| POST /sales | ✅ | ✅ | ❌ |
-| GET /sales | ✅ | ❌ | ❌ |
-| GET /stock | ✅ | ❌ | ✅ |
-| POST /stock/receive | ✅ | ❌ | ✅ |
-| POST /stock/adjust | ✅ | ❌ | ✅ |
-| GET /reports/* | ✅ | ❌ | ❌ |
-| GET /employees | ✅ | ❌ | ❌ |
-| POST /employees | ✅ | ❌ | ❌ |
 
 ---
 
-## 5. Input Validation
+## 4. Input Validation
 
-**All request bodies MUST be validated with Zod before reaching any controller or database call.** This is the #1 defence against injection attacks and malformed data.
+**All input is validated at the API layer with Zod before any database call.**
+Frontend validation is a UX convenience only — it must never be the last line of defence.
 
-```javascript
-// Example: sale creation schema
-import { z } from 'zod';
+```typescript
+// apps/api/src/middleware/validate.ts
+
+import { Request, Response, NextFunction } from "express";
+import { ZodSchema, ZodError } from "zod";
+
+export function validate(schema: ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.body = schema.parse(req.body);
+      next();
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return res.status(400).json({
+          error: "Validation failed",
+          details: err.errors.map((e) => ({
+            field: e.path.join("."),
+            message: e.message,
+          })),
+        });
+      }
+      next(err);
+    }
+  };
+}
+```
+
+```typescript
+// Example: Sale creation schema
+// apps/api/src/schemas/sale.schema.ts
+
+import { z } from "zod";
 
 export const createSaleSchema = z.object({
   customerId: z.string().cuid().optional(),
-  paymentMethod: z.enum(['CASH', 'CARD', 'EFT']),
-  items: z.array(z.object({
-    productId: z.string().cuid(),
-    quantity: z.number().int().positive().max(1000),
-    weightKg: z.number().positive().max(999).optional(),
-  })).min(1, 'Sale must have at least one item'),
+  paymentMethod: z.enum(["CASH", "CARD", "EFT"]),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().cuid(),
+        quantity: z.number().positive().multipleOf(0.001),
+        weightKg: z.number().positive().multipleOf(0.001).optional(),
+      }),
+    )
+    .min(1, "Sale must have at least one item"),
 });
 
-// In route:
-router.post('/sales', authMiddleware, rbacMiddleware('CASHIER', 'OWNER'), async (req, res) => {
-  const parsed = createSaleSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(422).json({ errors: parsed.error.flatten() });
-  }
-  // Only now pass to controller
-});
+export type CreateSaleDto = z.infer<typeof createSaleSchema>;
+```
+
+**Additional rules:**
+
+- Reject requests with unexpected fields (`z.object().strict()` where appropriate)
+- Always validate URL params and query strings — not just body
+- Sanitise string inputs to prevent XSS: strip `<script>`, HTML tags in any user-supplied string before storing
+- Never use `eval()`, `Function()`, or dynamic SQL string concatenation
+
+---
+
+## 5. HTTP Security Headers
+
+Applied globally via `helmet` middleware.
+
+```typescript
+// apps/api/src/server.ts
+
+import helmet from "helmet";
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+  }),
+);
+```
+
+**Headers applied by Helmet:**
+
+| Header                      | Value                                          | Protection         |
+| --------------------------- | ---------------------------------------------- | ------------------ |
+| `X-Content-Type-Options`    | `nosniff`                                      | MIME-type sniffing |
+| `X-Frame-Options`           | `DENY`                                         | Clickjacking       |
+| `X-XSS-Protection`          | `0` (modern approach)                          | Legacy XSS filter  |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains; preload` | Forces HTTPS       |
+| `Content-Security-Policy`   | See above                                      | XSS, injection     |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`              | Referrer leakage   |
+| `Permissions-Policy`        | `camera=(), microphone=()`                     | Browser features   |
+
+---
+
+## 6. CORS Configuration
+
+```typescript
+// apps/api/src/server.ts
+
+import cors from "cors";
+
+const allowedOrigins = process.env.CORS_ORIGIN!.split(",").map((o) => o.trim());
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: origin ${origin} not permitted`));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 ```
 
 **Rules:**
-- Never trust `req.body` without Zod validation
-- Never use string concatenation in DB queries (Prisma parameterizes automatically)
-- Strip all HTML from any text field that will be displayed (use `sanitize-html` if needed)
+
+- Never use `cors({ origin: '*' })` — that allows any website to call the API
+- `CORS_ORIGIN` in `.env` must be the exact production frontend URL
+- In development: `CORS_ORIGIN=http://localhost:5173`
 
 ---
 
-## 6. Data Protection
+## 7. Data Protection
 
-### 6.1 Data in Transit
-- All production traffic over **HTTPS / TLS 1.2 minimum** (enforced by Railway)
-- Local dev HTTP is acceptable only on `localhost`
-- API sets security headers via `helmet`:
+### 7.1 Data Classification
 
-```javascript
-import helmet from 'helmet';
-app.use(helmet());
-// Adds: X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security, etc.
-```
+| Data                   | Classification | Storage                   |
+| ---------------------- | -------------- | ------------------------- |
+| Employee passwords     | Critical       | bcrypt hash only          |
+| JWT secrets            | Critical       | Environment variable only |
+| Customer phone numbers | Sensitive      | Encrypted at rest         |
+| Transaction records    | Sensitive      | Standard encrypted DB     |
+| Product prices         | Internal       | Standard                  |
+| Stock levels           | Internal       | Standard                  |
+| Audit logs             | Internal       | Standard                  |
 
-### 6.2 Customer PII at Rest
+### 7.2 Encryption at Rest
 
-Customer `name` and `phone` are classified as PII and must be encrypted at rest.
+Customer phone numbers are encrypted before storage using AES-256 via the `prisma-field-encryption` extension, or manually using Node.js `crypto`:
 
-```javascript
-// utils/encryption.js
-import crypto from 'crypto';
+```typescript
+// apps/api/src/utils/encryption.ts
 
-const KEY = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');  // 32 bytes
-const ALGORITHM = 'aes-256-gcm';
+import crypto from "crypto";
 
-export function encrypt(plaintext) {
+const KEY = Buffer.from(process.env.ENCRYPTION_KEY!, "hex"); // 32-byte hex key
+const ALG = "aes-256-gcm";
+
+export function encrypt(text: string): string {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const cipher = crypto.createCipheriv(ALG, KEY, iv);
+  const encrypted = Buffer.concat([
+    cipher.update(text, "utf8"),
+    cipher.final(),
+  ]);
   const tag = cipher.getAuthTag();
-  return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`;
+  // Store as: iv:tag:ciphertext (all hex)
+  return `${iv.toString("hex")}:${tag.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
-export function decrypt(ciphertext) {
-  const [ivHex, tagHex, encryptedHex] = ciphertext.split(':');
-  const iv = Buffer.from(ivHex, 'hex');
-  const tag = Buffer.from(tagHex, 'hex');
-  const encrypted = Buffer.from(encryptedHex, 'hex');
-  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+export function decrypt(stored: string): string {
+  const [ivHex, tagHex, encHex] = stored.split(":");
+  const iv = Buffer.from(ivHex, "hex");
+  const tag = Buffer.from(tagHex, "hex");
+  const enc = Buffer.from(encHex, "hex");
+  const decipher = crypto.createDecipheriv(ALG, KEY, iv);
   decipher.setAuthTag(tag);
-  return decipher.update(encrypted) + decipher.final('utf8');
+  return decipher.update(enc) + decipher.final("utf8");
 }
 ```
 
-Apply `encrypt()` before writing customer name/phone to DB. Apply `decrypt()` when reading.
+Generate the encryption key:
 
-### 6.3 Secrets Management Rules
-
-| Secret | Where Stored | Never In |
-|---|---|---|
-| DATABASE_URL | `.env` file | Source code, logs, responses |
-| JWT_SECRET | `.env` file | Frontend bundle, comments |
-| ENCRYPTION_KEY | `.env` file | Version control |
-| Staff passwords | DB as bcrypt hash | Anywhere as plaintext |
-
-Add to `.gitignore`:
+```bash
+openssl rand -hex 32  # → set as ENCRYPTION_KEY in .env
 ```
-.env
-.env.*
-!.env.example
-```
+
+### 7.3 Data Minimisation
+
+- Collect only: name, phone number for customer records
+- Do not collect: ID numbers, addresses, email for customers
+- Anonymous sales are fully supported (customerId is nullable)
+- Audit logs store metadata (action, amounts) — not full record snapshots unless needed for dispute resolution
 
 ---
 
-## 7. Session Management
+## 8. Audit Logging
 
-- Access token: **8 hours**, stored in browser memory (not `localStorage`)
-- Refresh token: **7 days**, `httpOnly; Secure; SameSite=Strict` cookie
-- Auto-expire idle session after **30 minutes** of inactivity (frontend timer)
-- On logout: clear access token from memory; call `POST /auth/logout` to invalidate refresh token server-side (maintain a blocklist in DB)
-- Multiple device sessions: each device gets its own refresh token; owner can revoke all sessions
+Every mutation that touches financial or user data must write an `AuditLog` entry in the same database transaction.
 
----
-
-## 8. CORS Configuration
-
-```javascript
-// app.js
-import cors from 'cors';
-
-const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS blocked: ${origin}`));
-    }
-  },
-  credentials: true,       // Required for httpOnly cookies
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-}));
+```typescript
+// Mandatory audit events
+const AUDITABLE_ACTIONS = [
+  "SALE_COMPLETED", // any sale processed
+  "SALE_VOIDED", // if void is added in future
+  "STOCK_RECEIVED", // delivery logged
+  "STOCK_ADJUSTED", // manual correction
+  "PRODUCT_CREATED",
+  "PRODUCT_UPDATED",
+  "PRODUCT_ARCHIVED",
+  "EMPLOYEE_CREATED",
+  "EMPLOYEE_DEACTIVATED",
+  "EMPLOYEE_PASSWORD_RESET",
+  "LOGIN_SUCCESS",
+  "LOGIN_FAILURE", // logged without employee ID (use email as metadata)
+] as const;
 ```
 
+**Audit log rules:**
+
+- Audit logs are **append-only** — no UPDATE or DELETE on `audit_logs` table
+- The audit log table has no `CASCADE DELETE` from any foreign key
+- Only `OWNER` role may read audit logs via API
+- Audit logs are retained for minimum 1 year
+- IP address is logged for login events
+
 ---
 
-## 9. Audit Logging
+## 9. Frontend Security
 
-Every significant action must be recorded to the `AuditLog` table. This is non-negotiable for accountability — the owner must be able to trace who did what and when.
+### 9.1 Token Storage
 
-```javascript
-// utils/audit.js
-import { prisma } from './prisma.js';
+```typescript
+// apps/web/src/features/auth/authStore.ts
+// Using zustand with sessionStorage (NOT localStorage for tokens)
 
-export async function logAudit(tx, { employeeId, action, entity, entityId, metadata }) {
-  // tx = the Prisma transaction object, or prisma directly
-  return tx.auditLog.create({
-    data: { employeeId, action, entity, entityId: String(entityId), metadata },
-  });
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+interface AuthState {
+  token: string | null;
+  user: { id: string; name: string; role: string } | null;
+  setAuth: (token: string, user: AuthState["user"]) => void;
+  clearAuth: () => void;
 }
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      setAuth: (token, user) => set({ token, user }),
+      clearAuth: () => set({ token: null, user: null }),
+    }),
+    {
+      name: "bms-auth",
+      storage: createJSONStorage(() => sessionStorage),
+      // sessionStorage: cleared when browser tab/window closes
+      // Appropriate for shared shop devices
+    },
+  ),
+);
 ```
 
-**Actions that MUST be logged:**
+**Why sessionStorage, not localStorage:**
 
-| Action | Entity | Logged Fields |
-|---|---|---|
-| Login success | Employee | IP address, timestamp |
-| Login failure | Employee | IP, attempt count |
-| Sale completed | Sale | saleId, total, payment method |
-| Stock adjusted | Stock | productId, changeQty, reason |
-| Product price changed | Product | old price, new price |
-| Employee created | Employee | new employeeId, role |
-| Employee deactivated | Employee | employeeId |
-| Password reset | Employee | targetEmployeeId |
+- Shop tablets are shared. `localStorage` persists after the tab closes. A staff member closes the tab and the next person opens the POS — the previous session is still active. `sessionStorage` clears when the tab closes.
+
+### 9.2 XSS Prevention
+
+```tsx
+// ALWAYS use React's JSX — never dangerouslySetInnerHTML
+// ✅ Safe:
+<p>{userInputText}</p>
+
+// ❌ Never:
+<p dangerouslySetInnerHTML={{ __html: userInputText }} />
+```
+
+- Never interpolate user-controlled values into `href`, `src`, `style`, or event handlers
+- All `href` values must start with `/` or a known safe origin
+
+### 9.3 Route Protection
+
+```tsx
+// apps/web/src/components/ProtectedRoute.tsx
+
+import { Navigate } from "react-router-dom";
+import { useAuthStore } from "../features/auth/authStore";
+
+type Role = "OWNER" | "CASHIER" | "STOCK_MANAGER";
+
+interface Props {
+  children: React.ReactNode;
+  allowedRoles: Role[];
+}
+
+export function ProtectedRoute({ children, allowedRoles }: Props) {
+  const { token, user } = useAuthStore();
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role as Role)) {
+    return <Navigate to="/unauthorised" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Usage in router.tsx:
+// <Route path="/reports" element={
+//   <ProtectedRoute allowedRoles={['OWNER']}>
+//     <ReportsPage />
+//   </ProtectedRoute>
+// } />
+```
 
 ---
 
-## 10. Backup and Recovery
+## 10. Database Security
 
-| Backup Type | Frequency | Retention | Storage |
-|---|---|---|---|
-| Automated DB dump | Nightly at 02:00 | 30 days | Railway built-in + external (Cloudflare R2 free tier) |
-| Manual DB export | Before any migration | Indefinite | Local + cloud |
+```sql
+-- Create a dedicated application user (never use superuser in production)
+CREATE USER bms_app WITH PASSWORD 'strong-random-password';
 
-Recovery procedure:
-1. Restore from most recent Railway DB snapshot
-2. If snapshot unavailable: restore from R2 bucket dump
-3. Run `npx prisma migrate deploy` to apply any pending migrations
-4. Verify data integrity with a quick row count check across key tables
+-- Grant minimal permissions — SELECT, INSERT, UPDATE only
+-- No DELETE on core tables (soft-delete via isActive flag instead)
+GRANT CONNECT ON DATABASE simon_bms TO bms_app;
+GRANT USAGE ON SCHEMA public TO bms_app;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO bms_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO bms_app;
 
----
+-- Audit logs are append-only: INSERT only (no UPDATE, no DELETE)
+REVOKE UPDATE ON audit_logs FROM bms_app;
+REVOKE DELETE ON audit_logs FROM bms_app;
+```
 
-## 11. OWASP Top 10 Compliance Checklist
+**Additional rules:**
 
-| OWASP Risk | Status | How Addressed |
-|---|---|---|
-| A01 Broken Access Control | ✅ Mitigated | RBAC middleware on every route |
-| A02 Cryptographic Failures | ✅ Mitigated | bcrypt for passwords, AES-256-GCM for PII, TLS in transit |
-| A03 Injection | ✅ Mitigated | Prisma parameterized queries, Zod input validation |
-| A04 Insecure Design | ✅ Addressed | Threat model defined, secure-by-default patterns |
-| A05 Security Misconfiguration | ✅ Mitigated | helmet, strict CORS, env vars for all secrets |
-| A06 Vulnerable Components | ⚠️ Monitor | Run `npm audit` before each release |
-| A07 Auth Failures | ✅ Mitigated | Rate limiting, lockout, JWT expiry, bcrypt |
-| A08 Software/Data Integrity | ✅ Mitigated | Atomic DB transactions, Zod validation |
-| A09 Logging Failures | ✅ Mitigated | AuditLog table, structured error logging |
-| A10 SSRF | N/A | No external URL fetching in this app |
+- `DATABASE_URL` uses SSL mode: `?sslmode=require`
+- Never expose database port publicly — Railway keeps it internal by default
+- Prisma uses connection pooling (`?connection_limit=5` for Railway starter plan)
+- Run `prisma migrate deploy` only — never `prisma migrate dev` in production
 
 ---
 
-## 12. Security Review Checklist (Run Before Each Phase Merge)
+## 11. POPIA Compliance (South Africa)
 
-- [ ] `npm audit --audit-level=high` passes with no high/critical findings
-- [ ] No `.env` file committed (`git status` clean)
-- [ ] All new routes have `authMiddleware` + `rbacMiddleware`
-- [ ] All new request bodies have Zod validation
-- [ ] No raw SQL strings anywhere in codebase
-- [ ] Audit log entries created for all listed actions
-- [ ] Password hash cost factor is 12 (not lower)
-- [ ] No `console.log` statements that print JWT, passwords, or PII
+The BMS is a South African system. It must comply with the **Protection of Personal Information Act (POPIA), Act 4 of 2013**.
+
+| Requirement             | Implementation                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| **Lawful collection**   | Customers informed at point of capture that their name and phone are stored                   |
+| **Purpose limitation**  | Customer data used only for transaction history and loyalty identification                    |
+| **Data minimisation**   | Name + phone only. No ID number, no address, no email collected                               |
+| **Subject access**      | Owner can view and delete a customer record on request                                        |
+| **Deletion**            | Customer records can be soft-deleted (anonymised) — transactions retain for financial records |
+| **Security**            | Customer phone encrypted at rest (AES-256), transmitted via HTTPS only                        |
+| **Breach notification** | Owner must be notified within 72 hours of any discovered breach                               |
+| **Retention**           | Transaction records retained for 5 years (financial compliance), then purged                  |
+
+**Customer consent capture at POS:**
+
+```tsx
+// During customer creation:
+<p className="text-sm text-secondary">
+  We store your name and phone number to track your purchase history.
+  You may request deletion of your records at any time.
+</p>
+<label>
+  <input type="checkbox" required />
+  I agree to my information being stored by Simon Family Farm.
+</label>
+```
+
+---
+
+## 12. Security Checklist — Before Deploying to Production
+
+Use this checklist before every production deployment.
+
+### Environment
+
+- [ ] `JWT_SECRET` is at least 64 random characters (verified with `wc -c`)
+- [ ] `ENCRYPTION_KEY` is a 32-byte hex string (`openssl rand -hex 32`)
+- [ ] `NODE_ENV=production` is set
+- [ ] `DATABASE_URL` uses `sslmode=require`
+- [ ] `CORS_ORIGIN` is the exact production frontend URL (no trailing slash)
+- [ ] No `.env` file is committed to Git (`.gitignore` includes `.env`)
+
+### Authentication
+
+- [ ] Bcrypt cost factor is `12` in production
+- [ ] JWT expiry is set to `8h` or less
+- [ ] Login rate limiter is active (max 5 attempts per 15 minutes)
+- [ ] Session auto-logout fires after 30 minutes of inactivity
+
+### API
+
+- [ ] All routes have `authenticate` middleware
+- [ ] All routes have `authorize` middleware with correct roles
+- [ ] All body inputs validated with Zod
+- [ ] `helmet()` middleware is active
+- [ ] `cors()` middleware has explicit origin whitelist
+- [ ] `passwordHash` field excluded from all query `select` statements
+
+### Database
+
+- [ ] Application uses dedicated `bms_app` user, not superuser
+- [ ] `audit_logs` table has UPDATE and DELETE revoked
+- [ ] Migrations ran with `prisma migrate deploy` (not `dev`)
+- [ ] Daily backup is confirmed active in Railway dashboard
+
+### Frontend
+
+- [ ] Token stored in `sessionStorage` (not `localStorage`)
+- [ ] All routes wrapped in `ProtectedRoute` with correct `allowedRoles`
+- [ ] No `dangerouslySetInnerHTML` anywhere in the codebase
+- [ ] `manifest.json` has correct `theme_color: "#C21322"`
+
+### POPIA
+
+- [ ] Customer consent checkbox is shown before creating any customer record
+- [ ] Customer phone number is encrypted before storage (verified in DB)
+- [ ] Privacy notice is accessible from login screen footer
+
+---
+
+## 13. Incident Response
+
+If a security breach is suspected:
+
+1. **Immediately** rotate `JWT_SECRET` in Railway environment variables — all existing sessions are invalidated
+2. **Immediately** rotate `ENCRYPTION_KEY` and re-encrypt customer records with the new key
+3. **Within 72 hours** notify the business owner and affected customers (POPIA requirement)
+4. Pull full `audit_logs` for the breach window to determine scope
+5. Reset passwords for all employee accounts
+6. Review Railway access logs for the breach timeframe
+
+---
+
+## 14. Gemini CLI Prompt Snippets
+
+### For any auth/security code:
+
+```
+Using the Simon Family Farm BMS security standards (SECURITY.md):
+- Passwords: bcrypt, cost factor 12, never returned in API responses
+- JWT: HS256, 8h expiry, verified with verifyToken() util, sent as Bearer header only
+- Rate limiting: 5 login attempts per 15 min, 100 global requests per 15 min
+- All routes: authenticate middleware first, then authorize(roles) middleware
+- All body input: validated with Zod schema before controller runs
+- Audit log: every mutation writes an AuditLog entry in the same transaction
+- Token storage: sessionStorage (not localStorage)
+- NEVER use dangerouslySetInnerHTML
+- NEVER return passwordHash in any API response
+- NEVER use cors({ origin: '*' })
+```
+
+### For customer data handling:
+
+```
+Customer phone numbers must be encrypted using the encrypt() utility before
+INSERT and decrypted with decrypt() after SELECT. Never store or log plain
+phone numbers. Customer record creation must show a POPIA consent checkbox
+before the form can submit.
+```
+
+---
+
+_SECURITY.md — Simon Family Farm BMS — v1.0 — June 2026_
+_Jurisdiction: South Africa — POPIA Act 4 of 2013 applies_
+_Stack: Node.js 20 + Express 4 + Prisma 5 + PostgreSQL 15 + React 18_

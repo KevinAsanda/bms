@@ -1,136 +1,199 @@
-# ARCHITECTURE.md
-# Butchery Management System (BMS) — Simon Family Farm
-> Version 1.0 | June 2026 | Single-developer build target
+# ARCHITECTURE.md — Simon Family Farm Butchery Management System
+
+> **Give this file to Gemini CLI at the start of every backend, API, or database generation prompt.**
+> Every structural decision in this document is final unless explicitly revised.
+> Gemini must not introduce new frameworks, databases, or services not listed here.
 
 ---
 
 ## 1. System Overview
 
-The BMS is a **full-stack Progressive Web App (PWA)** built on a RESTful Node.js/Express backend with a React frontend, backed by PostgreSQL. It replaces manual notebooks and verbal processes at Simon Family Farm Butchery, Clermont Rank, serving 10 staff across three roles.
+The BMS is a **full-stack Progressive Web Application** built on a JavaScript-only stack (React + Node.js). It serves three user roles — Owner, Cashier, and Stock Manager — across mixed devices (desktop, tablet, mobile) in a butchery shop environment with potentially unreliable internet.
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER                           │
-│  React + Vite + Tailwind (PWA)                                 │
-│  ├── POS Screen (Cashier)                                      │
-│  ├── Inventory Panel (Stock Manager)                           │
-│  └── Owner Dashboard (Reports + Admin)                         │
-└────────────────────┬───────────────────────────────────────────┘
-                     │ HTTPS / REST (JSON)
-┌────────────────────▼───────────────────────────────────────────┐
-│                        API LAYER                               │
-│  Node.js + Express.js                                          │
-│  ├── /auth       — JWT login, refresh, logout                  │
-│  ├── /products   — CRUD, barcode lookup                        │
-│  ├── /sales      — POS checkout, receipt                       │
-│  ├── /stock      — levels, adjustments, delivery receive       │
-│  ├── /customers  — create, search, history                     │
-│  ├── /reports    — daily sales, cash-up, stock report          │
-│  └── /employees  — admin CRUD, role management                 │
-└────────────────────┬───────────────────────────────────────────┘
-                     │ Prisma ORM (connection pooling)
-┌────────────────────▼───────────────────────────────────────────┐
-│                      DATABASE LAYER                            │
-│  PostgreSQL 15                                                 │
-│  Hosted: Railway (prod) / Docker (local dev)                   │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      CLIENT LAYER                           │
+│  React 18 + Vite + Tailwind CSS                             │
+│  PWA (Workbox) — offline-capable service worker             │
+│  Deployed as static files on CDN                            │
+└─────────────┬───────────────────────────────────────────────┘
+              │ HTTPS / REST JSON
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      API LAYER                              │
+│  Node.js 20 LTS + Express 4                                 │
+│  JWT auth middleware on every protected route               │
+│  Helmet, CORS, rate-limiting, input validation              │
+└─────────────┬───────────────────────────────────────────────┘
+              │ Prisma ORM (connection pooling)
+              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   DATABASE LAYER                            │
+│  PostgreSQL 15                                              │
+│  Hosted on Railway (production) / local Docker (dev)        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Monorepo Directory Structure
+## 2. Monorepo Structure
 
 ```
-bms/
+simon-bms/
 ├── apps/
-│   ├── api/                        # Node.js + Express backend
+│   ├── web/                  # React frontend (Vite)
+│   │   ├── public/
+│   │   │   ├── logo.png      # Butcher mascot logo
+│   │   │   ├── manifest.json
+│   │   │   └── icons/        # PWA icons: 192, 512
 │   │   ├── src/
-│   │   │   ├── routes/             # Express route files (one per domain)
-│   │   │   ├── controllers/        # Business logic handlers
-│   │   │   ├── middleware/         # auth.js, rbac.js, errorHandler.js, rateLimiter.js
-│   │   │   ├── services/           # DB queries via Prisma (saleService, stockService…)
-│   │   │   ├── utils/              # bcrypt helpers, JWT helpers, receipt generator
-│   │   │   └── app.js              # Express app factory (no listen here)
-│   │   ├── prisma/
-│   │   │   ├── schema.prisma       # Single source of truth for DB schema
-│   │   │   └── migrations/         # Auto-generated migration files
-│   │   ├── tests/                  # Vitest unit + integration tests
-│   │   │   ├── auth.test.js
-│   │   │   ├── pos.test.js
-│   │   │   └── stock.test.js
-│   │   ├── .env.example            # Template — never commit real .env
-│   │   ├── server.js               # Entry point (calls app.listen)
+│   │   │   ├── main.tsx
+│   │   │   ├── App.tsx
+│   │   │   ├── router.tsx    # React Router v6 routes
+│   │   │   ├── styles/
+│   │   │   │   ├── tokens.css       # All CSS variables (from DESIGN.md §14)
+│   │   │   │   └── global.css       # Reset + base styles
+│   │   │   ├── components/          # Shared UI components
+│   │   │   │   ├── Button/
+│   │   │   │   ├── Input/
+│   │   │   │   ├── Card/
+│   │   │   │   ├── Table/
+│   │   │   │   ├── Badge/
+│   │   │   │   ├── Toast/
+│   │   │   │   ├── Modal/
+│   │   │   │   ├── Sidebar/
+│   │   │   │   └── ThemeToggle/
+│   │   │   ├── features/            # Feature modules (co-located)
+│   │   │   │   ├── auth/
+│   │   │   │   │   ├── LoginPage.tsx
+│   │   │   │   │   ├── useAuth.ts
+│   │   │   │   │   └── authStore.ts
+│   │   │   │   ├── pos/
+│   │   │   │   │   ├── POSPage.tsx
+│   │   │   │   │   ├── Cart.tsx
+│   │   │   │   │   ├── ProductSearch.tsx
+│   │   │   │   │   ├── BarcodeInput.tsx
+│   │   │   │   │   ├── CheckoutModal.tsx
+│   │   │   │   │   ├── Receipt.tsx
+│   │   │   │   │   └── posStore.ts
+│   │   │   │   ├── inventory/
+│   │   │   │   │   ├── StockPage.tsx
+│   │   │   │   │   ├── StockTable.tsx
+│   │   │   │   │   ├── ReceiveDelivery.tsx
+│   │   │   │   │   └── StockCorrection.tsx
+│   │   │   │   ├── products/
+│   │   │   │   │   ├── ProductsPage.tsx
+│   │   │   │   │   ├── ProductForm.tsx
+│   │   │   │   │   └── ProductTable.tsx
+│   │   │   │   ├── reports/
+│   │   │   │   │   ├── DailyReport.tsx
+│   │   │   │   │   ├── CashUpSummary.tsx
+│   │   │   │   │   └── ReportsPage.tsx
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   ├── DashboardPage.tsx
+│   │   │   │   │   ├── MetricCard.tsx
+│   │   │   │   │   └── SalesChart.tsx
+│   │   │   │   ├── customers/
+│   │   │   │   │   ├── CustomersPage.tsx
+│   │   │   │   │   └── CustomerSearch.tsx
+│   │   │   │   └── settings/
+│   │   │   │       ├── SettingsPage.tsx
+│   │   │   │       └── UserManagement.tsx
+│   │   │   ├── hooks/               # Shared hooks
+│   │   │   │   ├── useBarcode.ts
+│   │   │   │   ├── useOfflineQueue.ts
+│   │   │   │   └── usePermissions.ts
+│   │   │   ├── lib/
+│   │   │   │   ├── api.ts           # Axios instance + interceptors
+│   │   │   │   └── queryClient.ts   # TanStack Query config
+│   │   │   └── sw.ts                # Service worker (Workbox)
+│   │   ├── vite.config.ts
+│   │   ├── tailwind.config.ts
 │   │   └── package.json
 │   │
-│   └── web/                        # React + Vite frontend
+│   └── api/                  # Node.js Express backend
 │       ├── src/
-│       │   ├── pages/
-│       │   │   ├── Login.jsx
-│       │   │   ├── POS.jsx
-│       │   │   ├── Inventory.jsx
-│       │   │   ├── Dashboard.jsx
-│       │   │   └── Admin.jsx
-│       │   ├── components/
-│       │   │   ├── Cart/
-│       │   │   ├── ProductSearch/
-│       │   │   ├── StockTable/
-│       │   │   └── ReportCard/
-│       │   ├── hooks/              # useAuth, useCart, useOfflineSync
-│       │   ├── api/                # Axios instance + typed API callers
-│       │   ├── store/              # Zustand slices (auth, cart, stock)
-│       │   ├── service-worker.js   # Workbox offline strategy
-│       │   └── main.jsx
-│       ├── public/
-│       │   └── manifest.json       # PWA manifest
-│       ├── vite.config.js
+│       │   ├── index.ts             # App entry point
+│       │   ├── server.ts            # Express setup + middleware
+│       │   ├── prisma.ts            # Prisma client singleton
+│       │   ├── routes/
+│       │   │   ├── index.ts         # Route aggregator
+│       │   │   ├── auth.routes.ts
+│       │   │   ├── products.routes.ts
+│       │   │   ├── sales.routes.ts
+│       │   │   ├── stock.routes.ts
+│       │   │   ├── customers.routes.ts
+│       │   │   ├── reports.routes.ts
+│       │   │   └── users.routes.ts
+│       │   ├── controllers/
+│       │   │   ├── auth.controller.ts
+│       │   │   ├── products.controller.ts
+│       │   │   ├── sales.controller.ts
+│       │   │   ├── stock.controller.ts
+│       │   │   ├── customers.controller.ts
+│       │   │   ├── reports.controller.ts
+│       │   │   └── users.controller.ts
+│       │   ├── middleware/
+│       │   │   ├── authenticate.ts  # Verify JWT
+│       │   │   ├── authorize.ts     # Check role claim
+│       │   │   ├── validate.ts      # Zod schema validation
+│       │   │   ├── rateLimiter.ts   # express-rate-limit
+│       │   │   └── auditLog.ts      # Log every mutation
+│       │   ├── services/
+│       │   │   ├── auth.service.ts
+│       │   │   ├── sale.service.ts  # Atomic sale + stock update
+│       │   │   ├── stock.service.ts
+│       │   │   └── report.service.ts
+│       │   └── utils/
+│       │       ├── errors.ts        # Custom error classes
+│       │       └── logger.ts        # Winston logger
+│       ├── prisma/
+│       │   ├── schema.prisma
+│       │   ├── migrations/
+│       │   └── seed.ts              # Dev seed data
 │       └── package.json
 │
-├── docs/
-│   ├── ARCHITECTURE.md             # This file
-│   ├── SECURITY.md
-│   ├── DESIGN.md
-│   ├── SPEC_TEMPLATE.md
-│   └── specs/                      # One SPEC.md per feature
-│       ├── SPEC_auth.md
-│       ├── SPEC_pos.md
-│       └── …
-│
-├── docker-compose.yml              # Local: postgres + api + web
-├── .github/
-│   └── workflows/
-│       └── ci.yml                  # Lint + test on every push
-└── README.md
+├── package.json               # Workspace root
+└── .env.example
 ```
 
 ---
 
-## 3. Technology Stack (Locked Versions)
+## 3. Technology Stack — Locked Versions
 
-| Layer | Technology | Version | Reason |
-|---|---|---|---|
-| Frontend framework | React | 18.x | Component model, PWA-friendly |
-| Frontend build | Vite | 5.x | Fast HMR, tree-shaking |
-| Styling | Tailwind CSS | 3.x | Utility-first, responsive by default |
-| State management | Zustand | 4.x | Lightweight, no boilerplate |
-| HTTP client | Axios | 1.x | Interceptors for JWT injection |
-| Offline / PWA | Workbox | 7.x | Service worker, background sync |
-| Backend runtime | Node.js | 20 LTS | LTS stability |
-| Backend framework | Express.js | 4.x | Minimal, well-understood |
-| ORM | Prisma | 5.x | Type-safe, auto-migrations |
-| Database | PostgreSQL | 15.x | ACID transactions for POS |
-| Auth tokens | jsonwebtoken | 9.x | JWT HS256, role claims |
-| Password hashing | bcrypt | 5.x | Cost factor 12 |
-| Validation | Zod | 3.x | Runtime schema validation on all inputs |
-| Testing (API) | Vitest + Supertest | latest | Fast, ESM-native |
-| Testing (UI) | Playwright | 1.x | E2E browser tests via MCP |
-| Linting | ESLint + Prettier | latest | Enforced code style |
-| IoT (scanner) | Web Serial API | browser-native | USB HID barcode scanner |
-| IoT (scale) | Web Bluetooth API | browser-native | Phase 2 |
-| Hosting (prod) | Railway | — | Free tier: PostgreSQL + Node.js |
+| Layer                 | Package                             | Version | Reason                                     |
+| --------------------- | ----------------------------------- | ------- | ------------------------------------------ |
+| Frontend framework    | `react`                             | 18.x    | Industry standard, huge ecosystem          |
+| Build tool            | `vite`                              | 5.x     | Fastest dev builds, PWA plugin support     |
+| Routing               | `react-router-dom`                  | 6.x     | File-system style routing, loaders         |
+| State (server)        | `@tanstack/react-query`             | 5.x     | API state, caching, refetch on focus       |
+| State (client)        | `zustand`                           | 4.x     | POS cart, auth state — minimal boilerplate |
+| Styling               | `tailwindcss`                       | 3.x     | Utility-first, tokens from DESIGN.md       |
+| Icons                 | `lucide-react`                      | latest  | See DESIGN.md §7                           |
+| Forms                 | `react-hook-form`                   | 7.x     | Performant, works with Zod                 |
+| Validation (FE)       | `zod`                               | 3.x     | Schema sharing with backend                |
+| Charts                | `recharts`                          | 2.x     | Composable, React-native                   |
+| PWA                   | `vite-plugin-pwa` + `workbox`       | latest  | Service worker generation                  |
+| HTTP client           | `axios`                             | 1.x     | Interceptors for auth token injection      |
+| Backend runtime       | `node`                              | 20 LTS  | Long-term support                          |
+| API framework         | `express`                           | 4.x     | Stable, well-documented                    |
+| ORM                   | `prisma`                            | 5.x     | Type-safe, auto-migrations                 |
+| Database              | `postgresql`                        | 15.x    | Relational, ACID, ideal for POS            |
+| Auth                  | `jsonwebtoken`                      | 9.x     | JWT signing and verification               |
+| Password hashing      | `bcrypt`                            | 5.x     | Cost factor 12                             |
+| Input validation (BE) | `zod`                               | 3.x     | Same schemas as frontend                   |
+| HTTP security         | `helmet`                            | 7.x     | Sets 12 security headers automatically     |
+| Rate limiting         | `express-rate-limit`                | 7.x     | Brute-force protection                     |
+| CORS                  | `cors`                              | 2.x     | Whitelist frontend origin only             |
+| Logging               | `winston`                           | 3.x     | Structured JSON logs                       |
+| Testing (FE)          | `vitest` + `@testing-library/react` | latest  | Fast, Vite-native                          |
+| Testing (BE)          | `jest` + `supertest`                | latest  | API integration tests                      |
 
 ---
 
-## 4. Database Schema (Prisma)
+## 4. Database Schema
+
+Full Prisma schema. Every model here maps directly to the PRD entities.
 
 ```prisma
 // prisma/schema.prisma
@@ -150,6 +213,11 @@ enum Role {
   STOCK_MANAGER
 }
 
+enum PricingType {
+  FIXED        // per packet / each
+  WEIGHT_BASED // per kg
+}
+
 enum PaymentMethod {
   CASH
   CARD
@@ -160,7 +228,8 @@ enum StockAdjustmentReason {
   WASTAGE
   SPOILAGE
   COUNTING_ERROR
-  DELIVERY
+  THEFT
+  DAMAGE
   OTHER
 }
 
@@ -172,231 +241,522 @@ model Employee {
   role          Role
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
-  sales         Sale[]
-  adjustments   StockAdjustment[]
-  auditLogs     AuditLog[]
+  updatedAt     DateTime  @updatedAt
+
+  sales             Sale[]
+  stockAdjustments  StockAdjustment[]
+  auditLogs         AuditLog[]
+
+  @@index([email])
+  @@map("employees")
 }
 
 model Customer {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?  @unique
-  createdAt DateTime @default(now())
-  sales     Sale[]
+  id          String    @id @default(cuid())
+  name        String
+  phone       String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sales       Sale[]
+
+  @@index([phone])
+  @@map("customers")
 }
 
 model Category {
-  id       String    @id @default(cuid())
-  name     String    @unique  // Beef, Chicken, Wors, Pork, Other
-  products Product[]
+  id        String    @id @default(cuid())
+  name      String    @unique  // Beef, Chicken, Wors, Pork, Other
+  createdAt DateTime  @default(now())
+
+  products  Product[]
+
+  @@map("categories")
 }
 
 model Product {
   id           String      @id @default(cuid())
   name         String
   barcode      String      @unique
-  categoryId   String
-  category     Category    @relation(fields: [categoryId], references: [id])
-  pricePerUnit Decimal     @db.Decimal(10, 2)
-  unitType     String      // "fixed" | "per_kg"
+  pricingType  PricingType
+  pricePerUnit Decimal     @db.Decimal(10, 2)  // per unit OR per kg
+  unit         String      // "kg", "each", "pack"
   isActive     Boolean     @default(true)
+  categoryId   String
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  category     Category    @relation(fields: [categoryId], references: [id])
   stock        Stock?
   saleItems    SaleItem[]
-  adjustments  StockAdjustment[]
+
+  @@index([barcode])
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
 }
 
 model Stock {
-  id           String   @id @default(cuid())
-  productId    String   @unique
-  product      Product  @relation(fields: [productId], references: [id])
-  quantity     Decimal  @db.Decimal(10, 3)   // supports kg decimals
-  lowThreshold Decimal  @db.Decimal(10, 3)   @default(0)
-  updatedAt    DateTime @updatedAt
+  id           String    @id @default(cuid())
+  productId    String    @unique
+  quantity     Decimal   @db.Decimal(10, 3)  // 3dp for kg precision
+  lowThreshold Decimal   @db.Decimal(10, 3)  @default(2)
+  updatedAt    DateTime  @updatedAt
+
+  product      Product   @relation(fields: [productId], references: [id])
+
+  @@map("stock")
 }
 
 model Sale {
   id            String        @id @default(cuid())
   employeeId    String
-  employee      Employee      @relation(fields: [employeeId], references: [id])
-  customerId    String?
-  customer      Customer?     @relation(fields: [customerId], references: [id])
-  total         Decimal       @db.Decimal(10, 2)
+  customerId    String?       // nullable — anonymous sales allowed
+  totalAmount   Decimal       @db.Decimal(10, 2)
   paymentMethod PaymentMethod
+  receiptRef    String        @unique @default(cuid())
   createdAt     DateTime      @default(now())
+
+  employee      Employee      @relation(fields: [employeeId], references: [id])
+  customer      Customer?     @relation(fields: [customerId], references: [id])
   items         SaleItem[]
+
+  @@index([employeeId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("sales")
 }
 
 model SaleItem {
-  id         String   @id @default(cuid())
-  saleId     String
-  sale       Sale     @relation(fields: [saleId], references: [id])
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
-  quantity   Int
-  weightKg   Decimal? @db.Decimal(10, 3)
-  unitPrice  Decimal  @db.Decimal(10, 2)
-  lineTotal  Decimal  @db.Decimal(10, 2)
+  id          String    @id @default(cuid())
+  saleId      String
+  productId   String
+  quantity    Decimal   @db.Decimal(10, 3)
+  weightKg    Decimal?  @db.Decimal(10, 3)  // null for fixed-price items
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  lineTotal   Decimal   @db.Decimal(10, 2)
+
+  sale        Sale      @relation(fields: [saleId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@map("sale_items")
 }
 
 model StockAdjustment {
-  id         String                @id @default(cuid())
-  productId  String
-  product    Product               @relation(fields: [productId], references: [id])
-  employeeId String
-  employee   Employee              @relation(fields: [employeeId], references: [id])
-  changeQty  Decimal               @db.Decimal(10, 3)
-  reason     StockAdjustmentReason
-  notes      String?
-  createdAt  DateTime              @default(now())
+  id          String                 @id @default(cuid())
+  productId   String
+  employeeId  String
+  changeQty   Decimal                @db.Decimal(10, 3)  // + for receive, - for correction
+  reason      StockAdjustmentReason
+  notes       String?
+  createdAt   DateTime               @default(now())
+
+  employee    Employee               @relation(fields: [employeeId], references: [id])
+
+  @@index([productId])
+  @@index([createdAt])
+  @@map("stock_adjustments")
 }
 
 model AuditLog {
   id         String   @id @default(cuid())
   employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  action     String
-  entity     String
-  entityId   String?
-  metadata   Json?
+  action     String   // e.g. "SALE_COMPLETED", "STOCK_ADJUSTED", "PRODUCT_EDITED"
+  entityType String   // e.g. "Sale", "Product", "Employee"
+  entityId   String
+  metadata   Json?    // Stores before/after snapshots
+  ipAddress  String?
   createdAt  DateTime @default(now())
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String?
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("suppliers")
 }
 ```
 
 ---
 
-## 5. API Endpoints Reference
+## 5. API Routes
 
-### Auth
-| Method | Endpoint | Role | Description |
-|---|---|---|---|
-| POST | /auth/login | Public | Returns JWT + refresh token |
-| POST | /auth/logout | Any | Invalidates refresh token |
-| POST | /auth/refresh | Any | Rotates refresh token |
-| POST | /auth/reset-password | OWNER | Resets a staff password |
+All routes are prefixed with `/api/v1`.
 
-### Products
-| Method | Endpoint | Role | Description |
-|---|---|---|---|
-| GET | /products | Any | List all active products |
-| GET | /products/barcode/:code | Any | Lookup by barcode (POS) |
-| POST | /products | OWNER | Create product |
-| PUT | /products/:id | OWNER | Update product/price |
-| PATCH | /products/:id/archive | OWNER | Archive product |
+### 5.1 Auth
 
-### Sales (POS)
-| Method | Endpoint | Role | Description |
-|---|---|---|---|
-| POST | /sales | CASHIER, OWNER | Create sale (atomic: sale + stock deduction) |
-| GET | /sales/:id/receipt | Any | Get receipt for completed sale |
-| GET | /sales | OWNER | Paginated sales history |
+| Method | Endpoint        | Auth | Role | Description        |
+| ------ | --------------- | ---- | ---- | ------------------ |
+| POST   | `/auth/login`   | ❌   | —    | Login, returns JWT |
+| POST   | `/auth/logout`  | ✅   | All  | Invalidate session |
+| GET    | `/auth/me`      | ✅   | All  | Get current user   |
+| POST   | `/auth/refresh` | ✅   | All  | Refresh JWT        |
 
-### Stock
-| Method | Endpoint | Role | Description |
-|---|---|---|---|
-| GET | /stock | OWNER, STOCK_MANAGER | All stock levels |
-| POST | /stock/receive | STOCK_MANAGER, OWNER | Record delivery (barcode scan) |
-| POST | /stock/adjust | STOCK_MANAGER, OWNER | Manual adjustment with reason |
+### 5.2 Products
 
-### Reports
-| Method | Endpoint | Role | Description |
-|---|---|---|---|
-| GET | /reports/daily | OWNER | Daily sales summary |
-| GET | /reports/cashup | OWNER | Cash-up by payment method |
-| GET | /reports/stock | OWNER, STOCK_MANAGER | Full stock report |
+| Method | Endpoint                     | Auth | Role  | Description                 |
+| ------ | ---------------------------- | ---- | ----- | --------------------------- |
+| GET    | `/products`                  | ✅   | All   | List all active products    |
+| GET    | `/products/:id`              | ✅   | All   | Get single product          |
+| GET    | `/products/barcode/:barcode` | ✅   | All   | Lookup by barcode (POS use) |
+| POST   | `/products`                  | ✅   | Owner | Create product              |
+| PUT    | `/products/:id`              | ✅   | Owner | Update product              |
+| PATCH  | `/products/:id/archive`      | ✅   | Owner | Archive product             |
+
+### 5.3 Sales
+
+| Method | Endpoint       | Auth | Role           | Description                                        |
+| ------ | -------------- | ---- | -------------- | -------------------------------------------------- |
+| POST   | `/sales`       | ✅   | Cashier, Owner | Create sale (atomic: inserts sale + deducts stock) |
+| GET    | `/sales`       | ✅   | Owner          | List sales (paginated, date-filtered)              |
+| GET    | `/sales/:id`   | ✅   | Owner, Cashier | Get sale with receipt                              |
+| GET    | `/sales/today` | ✅   | Owner          | Today's sales summary                              |
+
+### 5.4 Stock
+
+| Method | Endpoint             | Auth | Role            | Description                      |
+| ------ | -------------------- | ---- | --------------- | -------------------------------- |
+| GET    | `/stock`             | ✅   | Owner, StockMgr | Full stock list with levels      |
+| GET    | `/stock/:productId`  | ✅   | All             | Single product stock level       |
+| POST   | `/stock/receive`     | ✅   | StockMgr, Owner | Receive delivery (adds to stock) |
+| POST   | `/stock/adjust`      | ✅   | StockMgr, Owner | Manual correction with reason    |
+| GET    | `/stock/adjustments` | ✅   | Owner           | Audit log of all adjustments     |
+
+### 5.5 Reports
+
+| Method | Endpoint                    | Auth | Role  | Description                          |
+| ------ | --------------------------- | ---- | ----- | ------------------------------------ |
+| GET    | `/reports/daily`            | ✅   | Owner | Daily sales report                   |
+| GET    | `/reports/cashup`           | ✅   | Owner | End-of-day cash-up by payment method |
+| GET    | `/reports/top-products`     | ✅   | Owner | Top 5 products by quantity/revenue   |
+| GET    | `/reports/employee-summary` | ✅   | Owner | Per-employee sales count             |
+
+### 5.6 Customers
+
+| Method | Endpoint                 | Auth | Role           | Description             |
+| ------ | ------------------------ | ---- | -------------- | ----------------------- |
+| GET    | `/customers`             | ✅   | Owner          | List customers          |
+| GET    | `/customers/search`      | ✅   | Cashier, Owner | Search by name or phone |
+| POST   | `/customers`             | ✅   | Cashier, Owner | Create customer         |
+| GET    | `/customers/:id/history` | ✅   | Owner          | Purchase history        |
+
+### 5.7 Users (Employee Management)
+
+| Method | Endpoint                    | Auth | Role  | Description             |
+| ------ | --------------------------- | ---- | ----- | ----------------------- |
+| GET    | `/users`                    | ✅   | Owner | List all employees      |
+| POST   | `/users`                    | ✅   | Owner | Create employee account |
+| PUT    | `/users/:id`                | ✅   | Owner | Edit employee           |
+| PATCH  | `/users/:id/deactivate`     | ✅   | Owner | Deactivate account      |
+| PATCH  | `/users/:id/reset-password` | ✅   | Owner | Reset staff password    |
 
 ---
 
-## 6. Critical Non-Negotiable Constraints
+## 6. Critical Service: Atomic Sale Processing
 
-1. **Atomic POS transactions** — Every `POST /sales` MUST use a Prisma `$transaction([...])` block. The sale record and all stock deductions commit together or not at all. Never do these as separate awaits.
+This is the most important function in the entire system. **Stock deduction and sale recording must happen in a single PostgreSQL transaction.** If either fails, both roll back.
 
-2. **RBAC on every route** — Every API route (except `/auth/login`) must go through `authMiddleware` then `rbacMiddleware(allowedRoles)`. No exceptions.
+```typescript
+// apps/api/src/services/sale.service.ts
 
-3. **No plaintext secrets** — DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET stored in `.env` only. Verified absent from source via `.gitignore` and a pre-commit hook.
+import prisma from "../prisma";
+import { CreateSaleDto } from "../schemas/sale.schema";
 
-4. **Input validation** — Every request body validated with a Zod schema before reaching the controller. Validation errors return HTTP 422 with structured errors.
+export async function createSale(data: CreateSaleDto, employeeId: string) {
+  return prisma.$transaction(async (tx) => {
+    // 1. Verify all products exist and are active
+    const productIds = data.items.map((i) => i.productId);
+    const products = await tx.product.findMany({
+      where: { id: { in: productIds }, isActive: true },
+      include: { stock: true },
+    });
 
-5. **TLS only in production** — Railway enforces HTTPS. Locally, HTTP is acceptable only on `localhost`.
+    if (products.length !== productIds.length) {
+      throw new Error("One or more products not found or inactive");
+    }
 
-6. **Barcode scanner** — The frontend POS screen listens for keyboard events (scanners emulate keyboard input). When a scan completes (ends with Enter key), fire the barcode lookup. No special driver needed.
+    // 2. Check stock availability and calculate line totals
+    let totalAmount = 0;
+    const itemsWithTotals = data.items.map((item) => {
+      const product = products.find((p) => p.id === item.productId)!;
+      const stock = product.stock!;
+
+      const deductQty =
+        product.pricingType === "WEIGHT_BASED" ? item.weightKg! : item.quantity;
+
+      if (Number(stock.quantity) < Number(deductQty)) {
+        throw new Error(`Insufficient stock for product: ${product.name}`);
+      }
+
+      const lineTotal =
+        product.pricingType === "WEIGHT_BASED"
+          ? Number(product.pricePerUnit) * Number(item.weightKg)
+          : Number(product.pricePerUnit) * Number(item.quantity);
+
+      totalAmount += lineTotal;
+
+      return { ...item, unitPrice: product.pricePerUnit, lineTotal, deductQty };
+    });
+
+    // 3. Create the Sale record
+    const sale = await tx.sale.create({
+      data: {
+        employeeId,
+        customerId: data.customerId ?? null,
+        totalAmount,
+        paymentMethod: data.paymentMethod,
+        items: {
+          create: itemsWithTotals.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            weightKg: i.weightKg ?? null,
+            unitPrice: i.unitPrice,
+            lineTotal: i.lineTotal,
+          })),
+        },
+      },
+      include: { items: { include: { product: true } }, customer: true },
+    });
+
+    // 4. Deduct stock for every item (bulk update)
+    await Promise.all(
+      itemsWithTotals.map((item) =>
+        tx.stock.update({
+          where: { productId: item.productId },
+          data: { quantity: { decrement: item.deductQty } },
+        }),
+      ),
+    );
+
+    // 5. Write audit log entry
+    await tx.auditLog.create({
+      data: {
+        employeeId,
+        action: "SALE_COMPLETED",
+        entityType: "Sale",
+        entityId: sale.id,
+        metadata: {
+          totalAmount,
+          itemCount: data.items.length,
+          paymentMethod: data.paymentMethod,
+        },
+      },
+    });
+
+    return sale;
+  });
+}
+```
 
 ---
 
-## 7. Environment Variables
+## 7. Authentication Flow
+
+```
+Client                          API Server
+  │                                │
+  │  POST /auth/login              │
+  │  { email, password }  ────────►│
+  │                                │  1. Find employee by email
+  │                                │  2. bcrypt.compare(password, hash)
+  │                                │  3. If match: sign JWT
+  │                                │     payload: { sub: id, role, name }
+  │                                │     expires: 8h
+  │◄──────────────────────────────│
+  │  { token, user }               │
+  │                                │
+  │  GET /api/v1/products          │
+  │  Authorization: Bearer <token> │
+  │  ────────────────────────────►│
+  │                                │  4. authenticate middleware:
+  │                                │     - Extract token from header
+  │                                │     - jwt.verify(token, JWT_SECRET)
+  │                                │     - Attach decoded payload to req.user
+  │                                │  5. authorize('CASHIER','OWNER') middleware:
+  │                                │     - Check req.user.role in allowed roles
+  │                                │     - 403 if not permitted
+  │◄──────────────────────────────│
+  │  200 { products: [...] }       │
+```
+
+---
+
+## 8. PWA Offline Architecture
+
+```
+Browser
+  │
+  ├─ Service Worker (Workbox)
+  │   ├─ CACHE FIRST: fonts, icons, logo, CSS, JS bundles
+  │   ├─ NETWORK FIRST: API calls (with cache fallback for GET requests)
+  │   └─ BACKGROUND SYNC: queued sales when offline
+  │
+  └─ IndexedDB (via idb-keyval)
+      ├─ offlineSalesQueue: Sale[] — queued while offline
+      ├─ productCache: Product[] — last-known product catalogue
+      └─ stockCache: Stock[] — last-known stock levels
+```
+
+**Offline sale flow:**
+
+```
+1. Cashier completes sale → POST /api/v1/sales fails (offline)
+2. Service worker intercepts → stores sale in IndexedDB offlineSalesQueue
+3. UI shows: "Sale saved offline — will sync when connected"
+4. Internet restored → Workbox Background Sync fires
+5. POST /api/v1/sales replayed → server processes atomically
+6. UI shows: "1 offline sale synced successfully"
+```
+
+---
+
+## 9. Environment Variables
 
 ```bash
-# apps/api/.env  (NEVER COMMIT)
+# apps/api/.env
 
 # Database
-DATABASE_URL="postgresql://user:password@host:5432/bms"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/simon_bms?schema=public"
 
-# JWT
-JWT_SECRET="<min 64 char random string>"
-JWT_REFRESH_SECRET="<different min 64 char random string>"
+# Auth
+JWT_SECRET="minimum-64-character-random-string-generated-with-openssl"
 JWT_EXPIRES_IN="8h"
-JWT_REFRESH_EXPIRES_IN="7d"
+BCRYPT_ROUNDS=12
 
-# App
+# Server
 PORT=3001
-NODE_ENV="development"
-CORS_ORIGIN="http://localhost:5173"
+NODE_ENV="production"
+CORS_ORIGIN="https://your-frontend-domain.com"
 
-# Encryption (for customer PII at rest)
-ENCRYPTION_KEY="<32 byte hex string>"
+# Logging
+LOG_LEVEL="info"
+
+# Rate limiting
+RATE_LIMIT_WINDOW_MS=900000   # 15 minutes
+RATE_LIMIT_MAX=100            # max requests per window
+
+# Login brute-force protection
+LOGIN_LIMIT_WINDOW_MS=900000  # 15 minutes
+LOGIN_LIMIT_MAX=5             # max failed attempts before lockout
 ```
-
----
-
-## 8. Local Development Setup
 
 ```bash
-# Prerequisites: Node 20 LTS, Docker Desktop
+# apps/web/.env
 
-# 1. Clone and install
-git clone <repo>
-cd bms
-npm install            # installs all workspace packages
-
-# 2. Start PostgreSQL
-docker-compose up -d postgres
-
-# 3. Run migrations and seed
-cd apps/api
-cp .env.example .env   # fill in DATABASE_URL
-npx prisma migrate dev
-npx prisma db seed     # creates owner account: admin@bms.local / Admin1234!
-
-# 4. Start API
-npm run dev            # nodemon on port 3001
-
-# 5. Start Frontend (new terminal)
-cd apps/web
-npm run dev            # Vite on port 5173
+VITE_API_BASE_URL="https://your-api-domain.com/api/v1"
 ```
 
 ---
 
-## 9. Production Deployment (Railway)
+## 10. Deployment Architecture
 
-1. Push monorepo to GitHub
-2. Create Railway project → "Deploy from GitHub"
-3. Add PostgreSQL plugin (Railway-managed)
-4. Set all environment variables in Railway dashboard
-5. Railway auto-detects `package.json` → runs `npm run build` then `npm start`
-6. Set `CORS_ORIGIN` to Railway-assigned frontend URL
-7. Run `npx prisma migrate deploy` as a Railway startup command
+```
+┌──────────────────────────────────────────┐
+│               PRODUCTION                 │
+│                                          │
+│  ┌─────────────┐    ┌─────────────────┐  │
+│  │  Vercel CDN │    │  Railway        │  │
+│  │  (Frontend) │    │  (API + DB)     │  │
+│  │             │    │                 │  │
+│  │  React SPA  │    │  Node.js API    │  │
+│  │  + PWA SW   │◄──►│  PostgreSQL 15  │  │
+│  │             │    │  Nightly backup │  │
+│  └─────────────┘    └─────────────────┘  │
+│                                          │
+│  Custom domain: bms.simonfamilyfarm.co   │
+└──────────────────────────────────────────┘
+```
+
+**Frontend (Vercel — free tier):**
+
+- `vercel.json` rewrites all paths to `index.html` (SPA routing)
+- Automatic HTTPS
+- Global CDN
+
+**Backend (Railway — starter plan):**
+
+- Node.js service + PostgreSQL 15 plugin
+- Automatic deploy on push to `main`
+- Daily backups enabled in Railway dashboard
+- Environment variables set in Railway project settings
 
 ---
 
-## 10. MVP Build Phases
+## 11. Scripts Reference
 
-| Phase | What Gets Built | Done When |
-|---|---|---|
-| 1 — Foundation | DB schema, migrations, seed, auth endpoints, JWT middleware, RBAC, user management | Login works; roles enforced |
-| 2 — Products | Product CRUD, category management, barcode assignment | Products in DB, searchable by barcode |
-| 3 — POS | Cart UI, barcode scan input, checkout flow, sale creation (atomic), digital receipt | Cashier completes full sale end-to-end |
-| 4 — Stock | Real-time stock view, delivery receiving, manual adjustment, audit log | Stock numbers change correctly on every sale |
-| 5 — Reports | Daily sales report, end-of-day cash-up summary, owner metrics | Owner sees today's revenue and cash-up |
-| 6 — Polish | Error handling, loading states, empty states, mobile responsiveness, E2E tests | Playwright tests pass; UI works on 360px |
+```json
+// Root package.json workspaces scripts
+{
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w apps/web\" \"npm run dev -w apps/api\"",
+    "build": "npm run build -w apps/web && npm run build -w apps/api",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "db:studio": "npm run db:studio -w apps/api",
+    "test": "npm run test -w apps/web && npm run test -w apps/api",
+    "lint": "eslint apps/web/src apps/api/src"
+  }
+}
+```
+
+```json
+// apps/api/package.json scripts
+{
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "test": "jest --coverage"
+  }
+}
+```
+
+---
+
+## 12. Gemini CLI Prompt Snippets
+
+### For any backend route:
+
+```
+Using the Simon Family Farm BMS architecture (ARCHITECTURE.md):
+- Node.js 20 + Express 4 + Prisma 5 + PostgreSQL 15
+- All routes require JWT auth middleware (authenticate.ts)
+- All mutations require role check (authorize.ts)
+- All input validated with Zod before hitting the controller
+- All mutations write an AuditLog entry
+- Sale creation MUST use prisma.$transaction() — never split stock deduction
+  from sale insertion
+- Error responses: { error: string, code?: string }
+- Success responses: { data: T, message?: string }
+```
+
+### For any database query:
+
+```
+Using Prisma 5 with PostgreSQL. Schema in ARCHITECTURE.md §4.
+- Use Decimal type for all money and weight fields
+- Always include relevant @@index fields in where clauses
+- Use select to limit returned fields — never return passwordHash to client
+- Paginate list queries: take/skip with default take=50
+```
+
+---
+
+_ARCHITECTURE.md — Simon Family Farm BMS — v1.0 — June 2026_
+_Stack: React 18 + Vite + Node.js 20 + Express 4 + Prisma 5 + PostgreSQL 15_

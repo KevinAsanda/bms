@@ -86,89 +86,100 @@ export default function Admin() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading staff...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+      <div className="w-12 h-12 border-4 border-[var(--color-brand-red)] border-t-transparent rounded-full animate-spin"></div>
+      <p className="font-bold text-[var(--color-text-secondary)] uppercase tracking-widest text-xs">Loading staff...</p>
+    </div>
+  );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-[var(--color-border-default)]">
         <div>
-          <h1 className="text-3xl font-extrabold font-[var(--font-display)] flex items-center gap-3">
-            <Shield className="text-[var(--color-primary)]" size={32} />
+          <h1 className="text-3xl font-[var(--font-display)] font-bold m-0 flex items-center gap-3">
+            <Shield className="text-[var(--color-brand-red)]" size={30} />
             Staff Management
           </h1>
-          <p className="text-[var(--color-text-secondary)] mt-1">Manage roles and permissions for your team</p>
+          <p className="text-[var(--color-text-secondary)] text-sm mt-1 m-0">
+            Manage roles and permissions for your team
+          </p>
         </div>
         <button 
           onClick={() => { setEditingEmployee(null); setShowModal(true); }}
-          className="bg-[var(--color-primary)] text-black font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:bg-[var(--color-primary-dark)] transition-all text-sm uppercase tracking-wider"
+          className="btn-primary flex items-center gap-2 text-sm uppercase tracking-wider"
         >
           <UserPlus size={16} />
           Add Employee
         </button>
       </div>
 
-      {error && <div className="bg-[var(--color-error)]/10 text-[var(--color-error)] p-4 rounded-xl mb-6">{error}</div>}
+      {error && (
+        <div className="bg-[var(--color-danger-bg)] border border-[var(--color-brand-red-mid)]/20 text-[var(--color-danger)] p-4 rounded-sm">
+          {error}
+        </div>
+      )}
 
-      <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-        <table className="w-full text-left">
+      {/* Staff Table */}
+      <div className="table-container bg-[var(--color-surface-card)]">
+        <table className="table">
           <thead>
-            <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]/50">
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Name</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Role</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Status</th>
-              <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Actions</th>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--color-border)]">
+          <tbody>
             {employees.map((emp) => (
-              <tr key={emp.id} className="hover:bg-[var(--color-bg-hover)] transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-bold">{emp.name}</div>
-                  <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1 mt-1">
+              <tr key={emp.id} className="group">
+                <td>
+                  <div className="font-bold text-[var(--color-brand-black)]">{emp.name}</div>
+                  <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1 mt-1 font-mono">
                     <Mail size={12} /> {emp.email}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-                    emp.role === 'OWNER' ? 'bg-[var(--color-role-owner)]/20 text-[var(--color-role-owner)]' :
-                    emp.role === 'STOCK_MANAGER' ? 'bg-[var(--color-role-stock)]/20 text-[var(--color-role-stock)]' :
-                    'bg-[var(--color-role-cashier)]/20 text-[var(--color-role-cashier)]'
+                <td>
+                  <span className={`badge ${
+                    emp.role === 'OWNER' ? 'badge-red' :
+                    emp.role === 'STOCK_MANAGER' ? 'badge-steel' :
+                    'badge-steel'
                   }`}>
                     {emp.role.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4">
+                <td>
                   {emp.isActive ? (
-                    <span className="flex items-center gap-1.5 text-[var(--color-success)] text-xs font-bold">
+                    <span className="flex items-center gap-1.5 text-[var(--color-success)] text-xs font-bold uppercase">
                       <CheckCircle size={14} /> Active
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-[var(--color-text-muted)] text-xs font-bold">
+                    <span className="flex items-center gap-1.5 text-[var(--color-text-muted)] text-xs font-bold uppercase">
                       <XCircle size={14} /> Deactivated
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
+                <td className="text-right">
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => { setEditingEmployee(emp); setFormData({ ...emp, password: '' }); setShowModal(true); }}
-                      className="p-2 hover:bg-[var(--color-bg-elevated)] rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
-                      title="Edit"
+                      className="btn-ghost"
+                      title="Edit Staff Member"
                     >
                       <Users size={18} />
                     </button>
                     <button 
                       onClick={() => handleResetPassword(emp.id)}
-                      className="p-2 hover:bg-[var(--color-bg-elevated)] rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-info)] transition-colors"
+                      className="btn-ghost"
                       title="Reset Password"
                     >
                       <Key size={18} />
                     </button>
                     <button 
                       onClick={() => toggleDeactivate(emp)}
-                      className={`p-2 hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors ${
-                        emp.isActive ? 'text-[var(--color-text-secondary)] hover:text-[var(--color-error)]' : 'text-[var(--color-success)]'
-                      }`}
+                      className="btn-ghost hover:text-[var(--color-danger)]"
                       title={emp.isActive ? "Deactivate" : "Reactivate"}
                     >
                       <UserMinus size={18} />
@@ -182,9 +193,9 @@ export default function Admin() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-            <h2 className="text-2xl font-black mb-6 font-[var(--font-display)] tracking-tight">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] rounded-md w-full max-w-md p-6 shadow-lg animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-bold mb-6 font-[var(--font-display)] uppercase m-0 text-black">
               {editingEmployee ? 'Edit Staff' : 'Add New Staff'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -192,7 +203,7 @@ export default function Admin() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">Full Name</label>
                 <input
                   required
-                  className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] font-semibold"
+                  className="input font-semibold"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -202,7 +213,7 @@ export default function Admin() {
                 <input
                   required
                   type="email"
-                  className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] font-semibold"
+                  className="input font-semibold"
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -213,7 +224,7 @@ export default function Admin() {
                   <input
                     required
                     type="password"
-                    className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] font-semibold"
+                    className="input font-semibold"
                     value={formData.password}
                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                   />
@@ -222,7 +233,7 @@ export default function Admin() {
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">System Role</label>
                 <select
-                  className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] font-semibold appearance-none cursor-pointer"
+                  className="input font-semibold cursor-pointer"
                   value={formData.role}
                   onChange={e => setFormData({ ...formData, role: e.target.value })}
                 >
@@ -231,19 +242,19 @@ export default function Admin() {
                   <option value="OWNER">Owner</option>
                 </select>
               </div>
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-4 border-t border-[var(--color-border-default)]">
                 <button 
                   type="button" 
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-[var(--color-bg-elevated)] text-white font-bold py-3.5 rounded-full hover:bg-[var(--color-bg-hover)] transition-all text-sm uppercase tracking-wider"
+                  className="btn-secondary flex-1 py-3"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 bg-[var(--color-primary)] text-black font-extrabold py-3.5 rounded-full hover:bg-[var(--color-primary-dark)] transition-all text-sm uppercase tracking-wider shadow-md"
+                  className="btn-primary flex-1 py-3"
                 >
-                  {editingEmployee ? 'Save' : 'Create'}
+                  {editingEmployee ? 'Save Changes' : 'Create Account'}
                 </button>
               </div>
             </form>

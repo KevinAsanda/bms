@@ -3,14 +3,14 @@ import { prisma } from '../utils/prisma.js';
 import { logAudit } from '../utils/audit.js';
 import { z } from 'zod';
 
-const createSaleSchema = z.object({
+export const createSaleSchema = z.object({
   customerId: z.string().cuid().optional().nullable(),
   paymentMethod: z.enum(['CASH', 'CARD', 'EFT']),
   items: z.array(z.object({
     productId: z.string().cuid(),
-    quantity: z.number().int().positive().max(1000),
-    weightKg: z.number().positive().max(999).nullable().optional(),
-  })).min(1, 'A sale must have at least one item'),
+    quantity: z.number().positive().multipleOf(0.001),
+    weightKg: z.number().positive().multipleOf(0.001).nullable().optional(),
+  })).min(1, 'Sale must have at least one item'),
 });
 
 export async function createSale(req, res) {
@@ -35,26 +35,28 @@ export async function createSale(req, res) {
       }
 
       // 2. Validate stock availability & calculate totals
-      let total = 0;
+      let totalAmount = 0;
       const saleItemsData = items.map(item => {
         const product = products.find(p => p.id === item.productId);
         
+        const deductQty = product.pricingType === 'WEIGHT_BASED' ? (item.weightKg || 0) : item.quantity;
+        
         // Stock check
-        if (!product.stock || parseFloat(product.stock.quantity) < (product.unitType === 'per_kg' ? (item.weightKg || 0) : item.quantity)) {
+        if (!product.stock || parseFloat(product.stock.quantity) < deductQty) {
           throw new Error(`Insufficient stock for ${product.name}`);
         }
 
-        const lineTotal = product.unitType === 'per_kg'
+        const lineTotal = product.pricingType === 'WEIGHT_BASED'
           ? parseFloat(product.pricePerUnit) * (item.weightKg || 0)
           : parseFloat(product.pricePerUnit) * item.quantity;
         
-        total += lineTotal;
+        totalAmount += lineTotal;
         
         return { 
           product, 
           item, 
           lineTotal,
-          deduction: product.unitType === 'per_kg' ? (item.weightKg || 0) : item.quantity
+          deductQty
         };
       });
 
@@ -63,13 +65,13 @@ export async function createSale(req, res) {
         data: {
           employeeId: req.user.id,
           customerId: customerId || null,
-          total,
+          totalAmount,
           paymentMethod,
           items: {
             create: saleItemsData.map(({ product, item, lineTotal }) => ({
               productId: item.productId,
               quantity: item.quantity,
-              weightKg: item.weightKg,
+              weightKg: item.weightKg || null,
               unitPrice: product.pricePerUnit,
               lineTotal,
             })),
@@ -82,10 +84,10 @@ export async function createSale(req, res) {
       });
 
       // 4. Deduct stock for every item
-      for (const { product, deduction } of saleItemsData) {
+      for (const { product, deductQty } of saleItemsData) {
         await tx.stock.update({
           where: { productId: product.id },
-          data: { quantity: { decrement: deduction } },
+          data: { quantity: { decrement: deductQty } },
         });
       }
 
@@ -93,9 +95,10 @@ export async function createSale(req, res) {
       await logAudit(tx, {
         employeeId: req.user.id,
         action: 'SALE_COMPLETED',
-        entity: 'Sale',
+        entityType: 'Sale',
         entityId: sale.id,
-        metadata: { total, paymentMethod, itemCount: items.length },
+        metadata: { totalAmount, paymentMethod, itemCount: items.length },
+        ipAddress: req.ip
       });
 
       return sale;

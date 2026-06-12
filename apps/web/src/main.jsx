@@ -24,10 +24,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user?.role)) return <Navigate to="/" />
   
   return (
-    <>
+    <div className="flex min-h-screen bg-[var(--color-surface-page)] text-[var(--color-text-primary)]">
       <Navigation />
-      {children}
-    </>
+      <main className="flex-1 p-8 overflow-y-auto max-h-screen">
+        {children}
+      </main>
+    </div>
   )
 }
 

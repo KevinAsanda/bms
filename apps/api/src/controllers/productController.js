@@ -8,7 +8,8 @@ const productSchema = z.object({
   barcode: z.string().min(1),
   categoryId: z.string().cuid(),
   pricePerUnit: z.number().positive(),
-  unitType: z.enum(['fixed', 'per_kg']),
+  pricingType: z.enum(['FIXED', 'WEIGHT_BASED']),
+  unit: z.string().min(1),
 });
 
 export async function getProducts(req, res) {
@@ -58,16 +59,17 @@ export async function createProduct(req, res) {
     const product = await prisma.product.create({
       data: {
         ...parsed.data,
-        stock: { create: { quantity: 0 } },
+        stock: { create: { quantity: 0, lowThreshold: 2 } },
       },
     });
 
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'PRODUCT_CREATED',
-      entity: 'Product',
+      entityType: 'Product',
       entityId: product.id,
       metadata: parsed.data,
+      ipAddress: req.ip
     });
 
     res.status(201).json(product);
@@ -75,6 +77,7 @@ export async function createProduct(req, res) {
     if (err.code === 'P2002') {
       return res.status(409).json({ error: 'Barcode already exists' });
     }
+    console.error(err);
     res.status(500).json({ error: 'Failed to create product' });
   }
 }
@@ -96,9 +99,10 @@ export async function updateProduct(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'PRODUCT_UPDATED',
-      entity: 'Product',
+      entityType: 'Product',
       entityId: product.id,
       metadata: { oldPrice: oldProduct.pricePerUnit, newPrice: product.pricePerUnit },
+      ipAddress: req.ip
     });
 
     res.json(product);
@@ -118,8 +122,9 @@ export async function archiveProduct(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'PRODUCT_ARCHIVED',
-      entity: 'Product',
+      entityType: 'Product',
       entityId: id,
+      ipAddress: req.ip
     });
 
     res.json({ message: 'Product archived successfully' });

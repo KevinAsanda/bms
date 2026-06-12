@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
@@ -37,58 +36,92 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-base)] px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-[var(--color-bg-surface)] rounded-full mb-4 border border-[var(--color-border)] shadow-inner">
-            <h1 className="text-[var(--color-primary)] text-3xl font-black font-[var(--font-display)] tracking-tighter">BMS</h1>
+    <div className="min-h-screen flex flex-col items-center justify-between bg-[var(--color-surface-page)] px-4 py-8">
+      {/* Spacer to push content down */}
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-full max-w-[420px]">
+          {/* Logo and Headings */}
+          <div className="text-center mb-8">
+            <img 
+              src="/logo-icon.svg" 
+              alt="Simon Family Farm Mascot" 
+              className="h-24 mx-auto mb-4 object-contain" 
+            />
+            <h1 className="font-[var(--font-display)] text-xl font-bold tracking-wider text-[var(--color-brand-black)] uppercase m-0">
+              Simon Family Farm
+            </h1>
+            <p className="font-[var(--font-body)] text-sm text-[var(--color-text-secondary)] mt-1 mb-0">
+              Butchery Management System
+            </p>
           </div>
-          <h2 className="text-white text-2xl font-black tracking-tight mb-1 font-[var(--font-display)]">Butchery Management</h2>
-          <p className="text-[var(--color-text-secondary)] text-[10px] font-bold uppercase tracking-[0.2em]">Simon Family Farm</p>
-        </div>
 
-        <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-3xl p-8 shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2.5">Email Address</label>
-              <input
-                type="email"
-                required
-                className={`w-full bg-[var(--color-bg-elevated)] border-2 ${error ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'} text-white rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary-glow)] transition-all font-semibold`}
-                placeholder="admin@bms.local"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2.5">Password</label>
-              <input
-                type="password"
-                required
-                className={`w-full bg-[var(--color-bg-elevated)] border-2 ${error ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'} text-white rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary-glow)] transition-all font-semibold`}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            {error && (
-              <div className="bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] px-5 py-3.5 rounded-full text-xs font-bold text-center">
-                {error}
+          {/* Form Card */}
+          <div className="card shadow-md">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  className="input"
+                  placeholder="name@bms.local"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-black font-bold py-4 rounded-full transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wider shadow-lg shadow-[var(--color-primary-glow)]"
-            >
-              {loading ? 'Logging in...' : 'Sign In'}
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)] mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="input"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              {error && (
+                <div className="bg-[var(--color-danger-bg)] border border-[var(--color-brand-red-mid)]/20 text-[var(--color-danger)] px-4 py-3 text-xs font-semibold rounded-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full py-4 text-sm uppercase font-bold tracking-wider"
+              >
+                {loading ? 'Logging in...' : 'Sign In'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
+
+      {/* POPIA Compliant Footer */}
+      <footer className="text-center w-full max-w-[420px] mt-8">
+        <p className="text-[10px] text-[var(--color-text-muted)] font-medium leading-relaxed m-0">
+          This system is strictly for authorized employee use. Personal information is collected and processed in compliance with the South African Protection of Personal Information Act (POPIA), Act 4 of 2013.
+        </p>
+        <div className="mt-2">
+          <a 
+            href="#privacy-policy" 
+            onClick={(e) => {
+              e.preventDefault();
+              alert("Simon Family Farm Privacy Policy (POPIA compliant):\n\nWe collect only essential customer information (names and phone numbers) to track purchase history. Customer data is encrypted at rest using AES-256 and never shared with third parties. You may request record deletion at any time by contacting the Owner.");
+            }}
+            className="text-[10px] text-[var(--color-brand-red)] hover:underline font-semibold"
+          >
+            Privacy Notice & Consent Policy
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

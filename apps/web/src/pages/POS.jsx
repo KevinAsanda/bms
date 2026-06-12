@@ -3,8 +3,6 @@ import { ShoppingCart, Scan, Search, Plus, Minus, Trash2, X, Check, Printer, Use
 import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
-
-// Components
 import CustomerSelector from '../components/POS/CustomerSelector';
 
 export default function POS() {
@@ -22,8 +20,14 @@ export default function POS() {
   
   const barcodeRef = useRef(null);
 
+  // Focus the invisible barcode input on mount and keep it focused
   useEffect(() => {
     barcodeRef.current?.focus();
+    const handleFocus = () => barcodeRef.current?.focus();
+    document.addEventListener('click', handleFocus);
+    return () => {
+      document.removeEventListener('click', handleFocus);
+    };
   }, []);
 
   const showToast = (message, type = 'success') => {
@@ -40,11 +44,9 @@ export default function POS() {
       addItem(response.data);
       setBarcode('');
       showToast(`Added ${response.data.name}`);
-      barcodeRef.current?.focus();
     } catch (err) {
       showToast('Product not found', 'error');
       setBarcode('');
-      barcodeRef.current?.focus();
     }
   };
 
@@ -65,8 +67,8 @@ export default function POS() {
   const handleCompleteSale = async () => {
     if (!paymentMethod || items.length === 0) return;
     
-    // Check if any per_kg items have 0 weight
-    const missingWeight = items.find(i => i.unitType === 'per_kg' && (!i.weightKg || i.weightKg <= 0));
+    // Check if any WEIGHT_BASED items have 0 weight
+    const missingWeight = items.find(i => i.pricingType === 'WEIGHT_BASED' && (!i.weightKg || i.weightKg <= 0));
     if (missingWeight) {
       showToast(`Please enter weight for ${missingWeight.name}`, 'error');
       return;
@@ -85,11 +87,8 @@ export default function POS() {
         })),
       };
       
-      console.log('Sending Sale Data:', saleData);
       const response = await api.post('/sales', saleData);
-      console.log('Sale Success Response:', response.data);
       
-      // Ensure the response data has the expected structure before setting state
       if (!response.data || !response.data.id) {
         throw new Error('Invalid response from server');
       }
@@ -100,7 +99,6 @@ export default function POS() {
       setSelectedCustomer(null);
       showToast('Sale completed successfully!');
     } catch (err) {
-      console.error('Full Checkout Error Object:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Sale failed';
       showToast(errorMessage, 'error');
     } finally {
@@ -109,303 +107,349 @@ export default function POS() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[var(--color-bg-base)] text-[var(--color-text-primary)] flex flex-col">
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left Panel - Scanner & Search */}
-        <div className="flex-1 p-6 space-y-8 overflow-y-auto">
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Scan size={18} className="text-[var(--color-primary)]" />
-              <h2 className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em]">Product Intake</h2>
-            </div>
-            <form onSubmit={handleBarcodeSubmit} className="relative">
-              <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                 <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
-                 <span className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest hidden sm:block">Ready</span>
-              </div>
-              <input
-                ref={barcodeRef}
-                type="text"
-                placeholder="Scan barcode or enter manually..."
-                className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border-strong)] text-[var(--color-text-primary)] rounded-full pl-24 pr-4 py-5 text-lg font-bold focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-glow)] transition-all placeholder:text-[var(--color-text-muted)]"
-                value={barcode}
-                onChange={(e) => setBarcode(e.target.value)}
-              />
-            </form>
-            
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={20} />
-              <input
-                type="text"
-                placeholder="Lookup by name..."
-                className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:border-[var(--color-primary)] transition-all font-bold"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-              
-              {searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--color-bg-surface)] border-2 border-[var(--color-border-strong)] rounded-2xl shadow-2xl z-30 overflow-hidden backdrop-blur-xl">
-                  <div className="p-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]/50 flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 text-[var(--color-text-secondary)]">Search Results</span>
-                    <button onClick={() => setSearchResults([])}><X size={14}/></button>
-                  </div>
-                  {searchResults.map(product => (
-                    <button
-                      key={product.id}
-                      onClick={() => { addItem(product); setSearchResults([]); setSearchQuery(''); barcodeRef.current?.focus(); showToast(`Added ${product.name}`); }}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-[var(--color-primary)] hover:text-black transition-all border-b border-[var(--color-border)] last:border-0 group"
-                    >
-                      <div className="text-left">
-                        <p className="font-bold group-hover:text-black">{product.name}</p>
-                        <p className="text-xs opacity-60 font-mono">{product.barcode}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono font-black text-[var(--color-primary)] group-hover:text-black">R {parseFloat(product.pricePerUnit).toFixed(2)}</p>
-                        <p className="text-[10px] uppercase font-bold opacity-60">/{product.unitType === 'per_kg' ? 'kg' : 'unit'}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+      {/* Invisible Barcode Input for silent scans */}
+      <form onSubmit={handleBarcodeSubmit} className="absolute top-0 left-0 opacity-0 pointer-events-none">
+        <input
+          ref={barcodeRef}
+          type="text"
+          value={barcode}
+          onChange={(e) => setBarcode(e.target.value)}
+        />
+      </form>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <User size={18} className="text-[var(--color-primary)]" />
-              <h2 className="text-xs font-bold text-[var(--color-text-secondary)] uppercase tracking-[0.2em]">Customer Association</h2>
-            </div>
-            <CustomerSelector onSelect={setSelectedCustomer} selectedCustomer={selectedCustomer} />
-          </section>
+      {/* Left Column (60% width): Product Intake & Search */}
+      <div className="w-[60%] p-6 flex flex-col gap-6 overflow-y-auto border-r border-[var(--color-border-default)]">
+        {/* Scanner Active Header Indicator */}
+        <div className="flex items-center justify-between card bg-[var(--color-surface-card)] p-4 border border-[var(--color-border-default)]">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-success)] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--color-success)]"></span>
+            </span>
+            <span className="font-[var(--font-body)] text-xs font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">
+              Barcode Scanner Active (Ready for input)
+            </span>
+          </div>
+          <button 
+            onClick={() => barcodeRef.current?.focus()}
+            className="btn-secondary btn-sm flex items-center gap-2"
+          >
+            <Scan size={14} />
+            <span>Refocus Scanner</span>
+          </button>
         </div>
 
-        {/* Right Panel - Cart */}
-        <div className="w-full md:w-[480px] bg-[var(--color-bg-surface)] border-l border-[var(--color-border)] flex flex-col shadow-2xl">
-          <div className="p-6 border-b border-[var(--color-border)] flex items-center justify-between bg-[var(--color-bg-elevated)]/30">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <ShoppingCart size={24} />
-                {items.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[var(--color-primary)] text-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
-                    {items.reduce((acc, i) => acc + i.quantity, 0)}
-                  </span>
-                )}
-              </div>
-              <h2 className="text-xl font-black font-[var(--font-display)] uppercase tracking-tight">Checkout</h2>
+        {/* Product Search */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Search size={18} className="text-[var(--color-brand-red)]" />
+            <h2 className="font-[var(--font-display)] text-sm font-bold tracking-wider m-0">Product Search</h2>
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Type product name to search..."
+              className="input font-bold"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Search Results Grid (3 columns, tap-friendly tiles) */}
+          {searchQuery.length >= 2 && (
+            <div className="grid grid-cols-3 gap-4 mt-2">
+              {searchResults.length === 0 ? (
+                <div className="col-span-3 card text-center py-8 text-[var(--color-text-muted)]">
+                  No products found matching "{searchQuery}"
+                </div>
+              ) : (
+                searchResults.map(product => (
+                  <button
+                    key={product.id}
+                    onClick={() => {
+                      addItem(product);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                      showToast(`Added ${product.name}`);
+                    }}
+                    className="card flex flex-col justify-between items-start text-left min-h-[80px] p-4 cursor-pointer hover:border-[var(--color-brand-red)] border border-[var(--color-border-default)] transition-all bg-[var(--color-surface-card)]"
+                  >
+                    <div className="w-full">
+                      <span className="badge badge-steel mb-2">
+                        {product.category?.name || 'Category'}
+                      </span>
+                      <h3 className="font-[var(--font-display)] text-sm font-bold text-[var(--color-brand-black)] leading-tight m-0 truncate w-full">
+                        {product.name}
+                      </h3>
+                    </div>
+                    <div className="mt-2 flex items-baseline justify-between w-full">
+                      <span className="font-[var(--font-mono)] text-sm font-bold text-[var(--color-brand-red)]">
+                        R {parseFloat(product.pricePerUnit).toFixed(2)}
+                      </span>
+                      <span className="text-[10px] text-[var(--color-text-muted)] font-semibold">
+                        /{product.unit}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
+          )}
+        </div>
+
+        {/* Customer Association */}
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="flex items-center gap-2">
+            <User size={18} className="text-[var(--color-brand-red)]" />
+            <h2 className="font-[var(--font-display)] text-sm font-bold tracking-wider m-0">Customer Association (POPIA compliant)</h2>
+          </div>
+          <CustomerSelector onSelect={setSelectedCustomer} selectedCustomer={selectedCustomer} />
+        </div>
+      </div>
+
+      {/* Right Column (40% width): Fixed Cart */}
+      <div className="w-[40%] bg-[var(--color-surface-card)] flex flex-col h-full shadow-md">
+        {/* Cart Header */}
+        <div className="p-5 border-b border-[var(--color-border-default)] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShoppingCart size={20} className="text-[var(--color-brand-red)]" />
+            <h2 className="font-[var(--font-display)] text-lg font-bold tracking-tight m-0">LIVE CART</h2>
+          </div>
+          {items.length > 0 && (
             <button 
               onClick={() => { if(confirm('Clear entire cart?')) clearCart(); }}
-              className="text-[10px] font-black text-[var(--color-error)] border border-[var(--color-error)]/20 px-3 py-1.5 rounded-lg hover:bg-[var(--color-error)] hover:text-white transition-all uppercase tracking-widest"
+              className="btn-danger btn-sm uppercase font-bold tracking-wider"
             >
-              Clear Cart
+              Clear
             </button>
-          </div>
+          )}
+        </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[var(--color-bg-base)]/50">
-            {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-[var(--color-text-muted)] space-y-6 opacity-40">
-                <div className="w-24 h-24 rounded-full border-2 border-dashed border-[var(--color-border)] flex items-center justify-center">
-                  <ShoppingCart size={40} strokeWidth={1} />
+        {/* Cart Items List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[var(--color-surface-page)]">
+          {items.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-[var(--color-text-muted)] space-y-3 opacity-60">
+              <ShoppingCart size={48} strokeWidth={1.2} />
+              <p className="font-[var(--font-body)] text-xs font-bold uppercase tracking-wider">Cart is Empty</p>
+            </div>
+          ) : (
+            items.map(item => (
+              <div 
+                key={item.productId} 
+                className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] p-4 space-y-4 shadow-sm hover:border-[var(--color-brand-red)]/50 transition-all"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="overflow-hidden">
+                    <p className="font-[var(--font-body)] font-bold text-md leading-tight text-[var(--color-brand-black)] m-0 truncate">
+                      {item.name}
+                    </p>
+                    <span className="text-[10px] text-[var(--color-text-muted)] font-mono font-semibold block mt-1">
+                      {item.barcode}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => removeItem(item.productId)} 
+                    className="btn-ghost text-[var(--color-text-muted)] hover:text-[var(--color-brand-red)] p-1.5"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
-                <p className="font-bold uppercase tracking-widest text-xs">Waiting for items...</p>
-              </div>
-            ) : (
-              items.map(item => (
-                <div key={item.productId} className="bg-[var(--color-bg-surface)] border-2 border-[var(--color-border)] rounded-2xl p-4 space-y-4 shadow-lg group hover:border-[var(--color-primary)]/50 transition-all">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="font-black text-lg leading-tight group-hover:text-[var(--color-primary)] transition-colors">{item.name}</p>
-                      <p className="text-[10px] text-[var(--color-text-secondary)] font-mono mt-1 uppercase tracking-widest font-bold">{item.barcode}</p>
-                    </div>
+                
+                <div className="flex items-end justify-between gap-4">
+                  {/* Quantity controls */}
+                  <div className="flex items-center gap-1 border border-[var(--color-border-default)] p-0.5 bg-[var(--color-surface-input)]">
                     <button 
-                      onClick={() => removeItem(item.productId)} 
-                      className="p-2 bg-[var(--color-bg-elevated)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+                      onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
+                      className="w-8 h-8 flex items-center justify-center text-[var(--color-text-secondary)] hover:bg-white"
                     >
-                      <Trash2 size={20} />
+                      <Minus size={14} strokeWidth={2.5} />
+                    </button>
+                    <span className="font-[var(--font-mono)] font-bold text-sm w-8 text-center">
+                      {item.quantity}
+                    </span>
+                    <button 
+                      onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
+                      className="w-8 h-8 flex items-center justify-center text-[var(--color-brand-red)] hover:bg-white"
+                    >
+                      <Plus size={14} strokeWidth={2.5} />
                     </button>
                   </div>
                   
-                  <div className="flex items-end justify-between gap-4">
-                    <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] p-1 rounded-xl border border-[var(--color-border)]">
-                      <button 
-                        onClick={() => updateQuantity(item.productId, item.quantity - 1)} 
-                        className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]"
-                      >
-                        <Minus size={18} strokeWidth={3} />
-                      </button>
-                      <span className="font-mono font-black text-xl w-10 text-center">{item.quantity}</span>
-                      <button 
-                        onClick={() => updateQuantity(item.productId, item.quantity + 1)} 
-                        className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--color-bg-surface)] text-[var(--color-primary)]"
-                      >
-                        <Plus size={18} strokeWidth={3} />
-                      </button>
-                    </div>
-                    
-                    <div className="flex-1 max-w-[160px]">
-                      {item.unitType === 'per_kg' ? (
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] block">Weight (kg)</label>
-                          <div className="relative">
-                             <input 
-                              type="number" 
-                              step="0.001"
-                              placeholder="0.000"
-                              autoFocus={item.weightKg === 0}
-                              className="w-full bg-[var(--color-bg-elevated)] border-2 border-[var(--color-border)] rounded-xl py-3 px-4 text-right font-mono font-black text-lg focus:outline-none focus:border-[var(--color-primary)]"
-                              value={item.weightKg || ''}
-                              onChange={(e) => updateWeight(item.productId, parseFloat(e.target.value) || 0)}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Unit Price</p>
-                          <p className="font-mono font-bold">R {item.unitPrice.toFixed(2)}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-[var(--color-border)] flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Line Total</span>
-                    <span className="font-mono font-black text-xl text-[var(--color-primary)]">
-                      R {(item.unitType === 'per_kg' ? item.unitPrice * (item.weightKg || 0) : item.unitPrice * item.quantity).toFixed(2)}
-                    </span>
+                  {/* Weight or pricing details */}
+                  <div className="flex-1 max-w-[140px]">
+                    {item.pricingType === 'WEIGHT_BASED' ? (
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] block">
+                          Weight (kg)
+                        </label>
+                        <input 
+                          type="number" 
+                          step="0.001"
+                          placeholder="0.000"
+                          autoFocus={item.weightKg === 0}
+                          className="input input-numeric py-1.5 px-2.5 text-sm"
+                          value={item.weightKg || ''}
+                          onChange={(e) => updateWeight(item.productId, parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)] block">
+                          Unit Price
+                        </span>
+                        <span className="font-[var(--font-mono)] text-sm font-semibold">
+                          R {item.unitPrice.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Cart Footer */}
-          <div className="p-6 bg-[var(--color-bg-elevated)] border-t-2 border-[var(--color-border-strong)] space-y-6">
-            <div className="flex justify-between items-end">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Total Payable</span>
-                <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase">Incl. 15% VAT (R {(getGrandTotal() * 0.15).toFixed(2)})</p>
+                
+                <div className="pt-2 border-t border-[var(--color-border-default)] flex justify-between items-center">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">Line Total</span>
+                  <span className="font-[var(--font-mono)] font-bold text-md text-[var(--color-brand-red)]">
+                    R {(item.pricingType === 'WEIGHT_BASED' ? item.unitPrice * (item.weightKg || 0) : item.unitPrice * item.quantity).toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <span className="text-5xl font-mono font-black text-[var(--color-primary)] tabular-nums tracking-tighter">
-                R {getGrandTotal().toFixed(2)}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <p className="text-[10px] font-black text-[var(--color-text-secondary)] uppercase tracking-[0.2em]">Select Payment</p>
-                {paymentMethod && <span className="text-[10px] bg-[var(--color-success)]/20 text-[var(--color-success)] px-2 py-0.5 rounded font-black uppercase tracking-widest">Selected</span>}
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {['CASH', 'CARD', 'EFT'].map(method => (
-                  <button
-                    key={method}
-                    onClick={() => setPaymentMethod(method)}
-                    className={`py-3.5 rounded-full font-bold transition-all border-2 flex flex-col items-center justify-center ${
-                      paymentMethod === method 
-                        ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-black font-extrabold scale-[1.01]' 
-                        : 'bg-[var(--color-bg-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)]/50'
-                    }`}
-                  >
-                    <span className="text-xs">{method}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              disabled={loading || items.length === 0 || !paymentMethod}
-              onClick={handleCompleteSale}
-              className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-black font-extrabold py-5 rounded-full text-lg transition-all active:scale-[0.97] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed uppercase tracking-wider flex items-center justify-center gap-2 shadow-md"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-3 border-black border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Complete Transaction
-                  <Check size={20} strokeWidth={3} />
-                </>
-              )}
-            </button>
-          </div>
+            ))
+          )}
         </div>
-      </main>
+
+        {/* Cart Footer / Checkout Controls */}
+        <div className="p-6 bg-[var(--color-surface-input)] border-t border-[var(--color-border-default)] space-y-5">
+          <div className="flex justify-between items-end">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">Total Payable</span>
+            <span className="text-3xl font-[var(--font-mono)] font-bold text-[var(--color-brand-red)] tabular-nums tracking-tighter">
+              R {getGrandTotal().toFixed(2)}
+            </span>
+          </div>
+
+          {/* Payment Method Selector */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider block">
+              Payment Method
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {['CASH', 'CARD', 'EFT'].map(method => (
+                <button
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  className={`py-2 px-3 border transition-all text-xs font-semibold ${
+                    paymentMethod === method 
+                      ? 'bg-[var(--color-brand-red)] border-[var(--color-brand-red)] text-white font-bold' 
+                      : 'bg-[var(--color-surface-card)] border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand-red)]/50'
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Checkout Submit Button */}
+          <button
+            disabled={loading || items.length === 0 || !paymentMethod}
+            onClick={handleCompleteSale}
+            className="btn-primary btn-xl w-full flex items-center justify-center gap-2 h-16"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Processing Sale...</span>
+              </span>
+            ) : (
+              <span>Complete Sale — R {getGrandTotal().toFixed(2)}</span>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Receipt Modal */}
       {receipt && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl animate-in fade-in duration-500" />
-          <div className="relative bg-white text-black w-full max-w-sm rounded-3xl p-10 shadow-2xl space-y-8 font-mono text-sm animate-in zoom-in duration-300">
-            <div className="text-center space-y-2">
-              <div className="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-3xl">S</div>
-              <h2 className="text-2xl font-black uppercase tracking-tight">Simon Family Farm</h2>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Clermont Rank, Durban</p>
-              <p className="text-[10px] font-bold">Tel: +27 31 123 4567</p>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative bg-white text-black w-full max-w-sm rounded-md p-6 shadow-lg space-y-6 font-mono text-xs overflow-y-auto max-h-[90vh]">
+            <div className="text-center space-y-1">
+              <img 
+                src="/logo-icon.svg" 
+                alt="SFF Logo" 
+                className="h-16 mx-auto mb-2 object-contain" 
+              />
+              <h2 className="font-[var(--font-display)] text-xl font-bold uppercase tracking-tight m-0 text-black">
+                SIMON FAMILY FARM
+              </h2>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest m-0">Clermont Rank, Durban</p>
+              <p className="text-[10px] m-0">Tel: +27 31 123 4567</p>
             </div>
             
-            <div className="border-y border-dashed border-gray-300 py-6 space-y-2 uppercase text-[10px] font-bold text-gray-600">
+            <div className="border-y border-dashed border-gray-300 py-4 space-y-1.5 uppercase text-[9px] font-bold text-gray-600">
               <div className="flex justify-between">
-                <span>Transaction ID:</span>
-                <span className="text-black font-black">#{receipt?.id?.slice(-8).toUpperCase() || 'N/A'}</span>
+                <span>Receipt Ref:</span>
+                <span className="text-black">{receipt?.receiptRef || receipt?.id?.slice(-8).toUpperCase()}</span>
               </div>
               <div className="flex justify-between">
                 <span>Date/Time:</span>
-                <span className="text-black font-black">{receipt?.createdAt ? new Date(receipt.createdAt).toLocaleString() : 'N/A'}</span>
+                <span className="text-black">{receipt?.createdAt ? new Date(receipt.createdAt).toLocaleString('en-ZA') : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Cashier:</span>
-                <span className="text-black font-black">{user?.name || 'Staff'}</span>
+                <span className="text-black">{user?.name || 'Staff'}</span>
               </div>
               {receipt?.customer && (
                 <div className="flex justify-between">
                   <span>Customer:</span>
-                  <span className="text-black font-black">{receipt.customer.name || 'Walk-in'}</span>
+                  <span className="text-black">{receipt.customer.name}</span>
                 </div>
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 py-2">
               {receipt?.items?.map(item => (
                 <div key={item.id} className="space-y-1">
-                  <div className="flex justify-between font-black text-base">
-                    <span className="uppercase tracking-tighter">{item?.product?.name || 'Product'}</span>
+                  <div className="flex justify-between font-bold text-sm">
+                    <span className="uppercase">{item?.product?.name || 'Product'}</span>
                     <span>R {parseFloat(item?.lineTotal || 0).toFixed(2)}</span>
                   </div>
-                  <div className="text-[10px] font-bold text-gray-500 uppercase">
-                    {item?.quantity || 0} units x R {parseFloat(item?.unitPrice || 0).toFixed(2)}
-                    {item?.weightKg && ` / ${parseFloat(item.weightKg).toFixed(3)}kg`}
+                  <div className="text-[10px] text-gray-500 uppercase">
+                    {item?.pricingType === 'WEIGHT_BASED' 
+                      ? `${parseFloat(item.weightKg).toFixed(3)}kg`
+                      : `${parseFloat(item.quantity).toFixed(0)} units`
+                    } x R {parseFloat(item?.unitPrice || 0).toFixed(2)}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="pt-6 border-t-2 border-black space-y-4">
-              <div className="flex justify-between text-2xl font-black italic tracking-tighter">
-                <span>TOTAL</span>
-                <span>R {parseFloat(receipt?.total || 0).toFixed(2)}</span>
+            <div className="pt-4 border-t-2 border-black space-y-3">
+              <div className="flex justify-between text-lg font-bold">
+                <span>TOTAL PAID</span>
+                <span>R {parseFloat(receipt?.totalAmount || receipt?.total || 0).toFixed(2)}</span>
               </div>
-              <div className="bg-gray-100 p-4 rounded-xl text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]">Paid via {receipt?.paymentMethod || 'UNKNOWN'}</p>
+              <div className="bg-gray-100 p-3 text-center rounded-sm">
+                <p className="text-[9px] font-bold uppercase tracking-wider m-0">
+                  Paid via {receipt?.paymentMethod || 'UNKNOWN'}
+                </p>
               </div>
             </div>
 
-            <div className="text-center pt-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">--- End of Receipt ---</p>
+            <div className="text-center pt-2">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 m-0">
+                --- Thank You ---
+              </p>
             </div>
 
-            <div className="flex flex-col gap-3 pt-6 print:hidden">
+            <div className="flex flex-col gap-2 pt-4 print:hidden">
               <button 
                 onClick={() => window.print()} 
-                className="w-full bg-black text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95"
+                className="btn-primary w-full py-3 text-xs uppercase"
               >
-                <Printer size={20} />
-                Print Physical Copy
+                Print Receipt
               </button>
               <button 
                 onClick={() => { setReceipt(null); barcodeRef.current?.focus(); }} 
-                className="w-full border-2 border-black font-black py-4 rounded-2xl uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                className="btn-secondary w-full py-3 text-xs uppercase"
               >
                 Close
               </button>
@@ -416,11 +460,12 @@ export default function POS() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] px-8 py-5 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-8 duration-500 ${
-          toast.type === 'error' ? 'bg-[var(--color-error)] text-white' : 'bg-[var(--color-success)] text-white'
+        <div className={`toast ${
+          toast.type === 'error' ? 'toast-danger' : 'toast-success'
         }`}>
-          {toast.type === 'error' ? <X size={24} strokeWidth={3} /> : <Check size={24} strokeWidth={3} />}
-          <span className="font-black uppercase tracking-tight text-lg">{toast.message}</span>
+          <div className="font-bold text-xs">
+            {toast.message}
+          </div>
         </div>
       )}
     </div>

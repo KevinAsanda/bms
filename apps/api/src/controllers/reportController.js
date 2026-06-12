@@ -22,7 +22,7 @@ export async function getDailySales(req, res) {
     });
 
     const summary = sales.reduce((acc, sale) => {
-      const amount = parseFloat(sale.total);
+      const amount = parseFloat(sale.totalAmount);
       acc.totalRevenue += amount;
       acc.saleCount += 1;
       acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + amount;
@@ -51,7 +51,7 @@ export async function getDashboardStats(req, res) {
           lte: endOfDay(today),
         },
       },
-      _sum: { total: true },
+      _sum: { totalAmount: true },
       _count: { id: true },
     });
 
@@ -84,20 +84,49 @@ export async function getDashboardStats(req, res) {
       where: {
         createdAt: { gte: startOfMonth(today) }
       },
-      _sum: { total: true }
+      _sum: { totalAmount: true }
     });
+
+    // 6. Top Product of the day
+    const topProductItem = await prisma.saleItem.groupBy({
+      by: ['productId'],
+      where: {
+        sale: {
+          createdAt: {
+            gte: startOfDay(today),
+            lte: endOfDay(today),
+          }
+        }
+      },
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+      take: 1
+    });
+
+    let topProduct = null;
+    if (topProductItem.length > 0) {
+      const p = await prisma.product.findUnique({
+        where: { id: topProductItem[0].productId }
+      });
+      topProduct = {
+        name: p?.name || 'Unknown',
+        quantity: parseFloat(topProductItem[0]._sum.quantity || 0)
+      };
+    }
 
     res.json({
       today: {
-        revenue: todaySales._sum.total || 0,
+        revenue: todaySales._sum.totalAmount || 0,
         count: todaySales._count.id,
         activeStaff: activeEmployeesCount.length
       },
-      monthRevenue: monthSales._sum.total || 0,
+      monthRevenue: monthSales._sum.totalAmount || 0,
       lowStock: lowStockItems,
-      recentSales
+      recentSales,
+      topProduct
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch dashboard metrics' });
   }
 }
