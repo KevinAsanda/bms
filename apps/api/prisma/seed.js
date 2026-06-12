@@ -6,6 +6,9 @@ import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcrypt';
 
+// Force node TLS to allow self-signed certificates
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // Use the session pooler for seeding
 const connectionString = process.env.DATABASE_URL;
 const pool = new pg.Pool({ 
