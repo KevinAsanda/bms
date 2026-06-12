@@ -60,9 +60,10 @@ export async function createEmployee(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'EMPLOYEE_CREATED',
-      entity: 'Employee',
+      entityType: 'Employee',
       entityId: employee.id,
       metadata: { email, role },
+      ipAddress: req.ip,
     });
 
     const { passwordHash: _, ...result } = employee;
@@ -88,9 +89,10 @@ export async function updateEmployee(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'EMPLOYEE_UPDATED',
-      entity: 'Employee',
+      entityType: 'Employee',
       entityId: employee.id,
       metadata: parsed.data,
+      ipAddress: req.ip,
     });
 
     const { passwordHash: _, ...result } = employee;
@@ -116,8 +118,9 @@ export async function deactivateEmployee(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'EMPLOYEE_DEACTIVATED',
-      entity: 'Employee',
+      entityType: 'Employee',
       entityId: id,
+      ipAddress: req.ip,
     });
 
     res.json({ message: 'Employee deactivated successfully' });
@@ -145,8 +148,9 @@ export async function resetEmployeePassword(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'PASSWORD_RESET',
-      entity: 'Employee',
+      entityType: 'Employee',
       entityId: employeeId,
+      ipAddress: req.ip,
     });
 
     res.json({ message: 'Password reset successfully' });

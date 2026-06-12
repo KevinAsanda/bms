@@ -28,9 +28,10 @@ export async function login(req, res) {
       await logAudit(prisma, {
         employeeId: employee.id,
         action: 'LOGIN_FAILURE',
-        entity: 'Employee',
+        entityType: 'Employee',
         entityId: employee.id,
-        metadata: { ip: req.ip },
+        metadata: {},
+        ipAddress: req.ip,
       });
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -49,9 +50,10 @@ export async function login(req, res) {
     await logAudit(prisma, {
       employeeId: employee.id,
       action: 'LOGIN_SUCCESS',
-      entity: 'Employee',
+      entityType: 'Employee',
       entityId: employee.id,
-      metadata: { ip: req.ip },
+      metadata: {},
+      ipAddress: req.ip,
     });
 
     res.json({ token, user: { id: employee.id, name: employee.name, role: employee.role, email: employee.email } });

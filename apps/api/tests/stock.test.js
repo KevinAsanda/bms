@@ -16,11 +16,35 @@ describe('Stock Management Endpoints', () => {
       .send({ email: 'admin@bms.local', password: 'Admin1234!' });
     adminToken = loginRes.body.token;
 
-    // Get an existing product
-    const prod = await prisma.product.findFirst({
+    let category = await prisma.category.findFirst();
+    if (!category) {
+      category = await prisma.category.create({ data: { name: 'Beef' } });
+    }
+
+    let prod = await prisma.product.findFirst({
         where: { isActive: true },
         include: { stock: true }
     });
+    
+    if (!prod) {
+      prod = await prisma.product.create({
+        data: {
+          name: 'Test Stock Product',
+          barcode: `TEST-STOCK-${Date.now()}`,
+          pricePerUnit: 12.00,
+          pricingType: 'FIXED',
+          unit: 'each',
+          categoryId: category.id,
+          stock: {
+            create: {
+              quantity: 10,
+              lowThreshold: 2
+            }
+          }
+        },
+        include: { stock: true }
+      });
+    }
     productId = prod.id;
   }, 30000);
 

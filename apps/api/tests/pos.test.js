@@ -19,14 +19,34 @@ describe('POS Endpoints (Sales)', () => {
       .send({ email: 'admin@bms.local', password: 'Admin1234!' });
     adminToken = loginRes.body.token;
 
-    // Just fetch an existing product instead of upserting complex stuff
-    const prod = await prisma.product.findFirst({
+    let category = await prisma.category.findFirst();
+    if (!category) {
+      category = await prisma.category.create({ data: { name: 'Beef' } });
+    }
+
+    let prod = await prisma.product.findFirst({
       where: { isActive: true },
       include: { stock: true }
     });
     
     if (!prod) {
-        throw new Error('No products found in database for testing');
+      prod = await prisma.product.create({
+        data: {
+          name: 'Test POS Product',
+          barcode: `TEST-POS-${Date.now()}`,
+          pricePerUnit: 10.00,
+          pricingType: 'FIXED',
+          unit: 'each',
+          categoryId: category.id,
+          stock: {
+            create: {
+              quantity: 100,
+              lowThreshold: 2
+            }
+          }
+        },
+        include: { stock: true }
+      });
     }
     productId = prod.id;
     

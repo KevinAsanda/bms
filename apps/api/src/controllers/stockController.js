@@ -57,9 +57,10 @@ export async function adjustStock(req, res) {
       await logAudit(tx, {
         employeeId: req.user.id,
         action: 'STOCK_ADJUSTED',
-        entity: 'Stock',
+        entityType: 'Stock',
         entityId: productId,
         metadata: { changeQty, reason },
+        ipAddress: req.ip,
       });
 
       return stock;
@@ -106,8 +107,10 @@ export async function receiveStock(req, res) {
       await logAudit(tx, {
         employeeId: req.user.id,
         action: 'STOCK_RECEIVED',
-        entity: 'Stock',
+        entityType: 'Stock',
+        entityId: 'multiple',
         metadata: { itemCount: items.length },
+        ipAddress: req.ip,
       });
 
       return updates;

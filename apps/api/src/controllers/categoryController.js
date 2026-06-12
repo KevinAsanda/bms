@@ -37,9 +37,10 @@ export async function createCategory(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'CATEGORY_CREATED',
-      entity: 'Category',
+      entityType: 'Category',
       entityId: category.id,
       metadata: parsed.data,
+      ipAddress: req.ip,
     });
 
     res.status(201).json(category);
@@ -67,9 +68,10 @@ export async function updateCategory(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'CATEGORY_UPDATED',
-      entity: 'Category',
+      entityType: 'Category',
       entityId: category.id,
       metadata: parsed.data,
+      ipAddress: req.ip,
     });
 
     res.json(category);
@@ -96,8 +98,9 @@ export async function deleteCategory(req, res) {
     await logAudit(prisma, {
       employeeId: req.user.id,
       action: 'CATEGORY_DELETED',
-      entity: 'Category',
+      entityType: 'Category',
       entityId: id,
+      ipAddress: req.ip,
     });
 
     res.json({ message: 'Category deleted successfully' });

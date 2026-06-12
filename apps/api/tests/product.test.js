@@ -30,7 +30,8 @@ describe('Product Endpoints', () => {
         barcode: `TEST-${Date.now()}`,
         categoryId,
         pricePerUnit: 10.50,
-        unitType: 'fixed'
+        pricingType: 'FIXED',
+        unit: 'each'
       });
 
     expect(res.status).toBe(201);
