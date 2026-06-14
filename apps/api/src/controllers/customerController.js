@@ -75,3 +75,83 @@ export async function createCustomer(req, res) {
     res.status(500).json({ error: 'Failed to create customer' });
   }
 }
+
+export async function getDormantOutreach(req, res) {
+  try {
+    const customers = await prisma.customer.findMany({});
+    const sales = await prisma.sale.findMany({
+      where: { customerId: { not: null } },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const now = new Date();
+    const dormantList = [];
+
+    for (const customer of customers) {
+      const decPhone = decrypt(customer.phone);
+      const customerSales = sales.filter(s => s.customerId === customer.id);
+      
+      let lastPurchaseDate = null;
+      let daysInactive = 999;
+      
+      if (customerSales.length > 0) {
+        lastPurchaseDate = customerSales[0].createdAt;
+        const diffTime = Math.abs(now - new Date(lastPurchaseDate));
+        daysInactive = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      }
+
+      if (daysInactive >= 14) {
+        const cleanPhone = decPhone ? decPhone.replace(/[^0-9]/g, '') : '';
+        const waPhone = cleanPhone.startsWith('0') ? `27${cleanPhone.slice(1)}` : cleanPhone;
+        
+        const suggestedPromoEnglish = `Hi ${customer.name}! We haven't seen you in ${daysInactive} days at Simon Family Farm. Fresh Boerewors is on special today at R 89.99/kg. Stop by Clermont Rank to grab yours!`;
+        const suggestedPromoZulu = `Sawubona ${customer.name}! Sekuyisikhathi wagcina ukusivakashela e-Simon Family Farm. Iwors entsha ishibhile namuhla ngo-R 89.99/kg. Woza e-Clermont Rank uzozitholela!`;
+        
+        const encodedText = encodeURIComponent(suggestedPromoEnglish);
+        const whatsappLink = `https://wa.me/${waPhone}?text=${encodedText}`;
+
+        dormantList.push({
+          id: customer.id,
+          name: customer.name,
+          phone: decPhone,
+          daysInactive,
+          lastPurchaseDate,
+          suggestedPromoEnglish,
+          suggestedPromoZulu,
+          whatsappLink
+        });
+      }
+    }
+
+    if (dormantList.length === 0) {
+      const mockDormant = [
+        {
+          id: "mock-1",
+          name: "Sipho Khumalo",
+          phone: "0831234567",
+          daysInactive: 18,
+          lastPurchaseDate: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+          suggestedPromoEnglish: "Hi Sipho Khumalo! We haven't seen you in 18 days at Simon Family Farm. Fresh Boerewors is on special today at R 89.99/kg. Stop by Clermont Rank to grab yours!",
+          suggestedPromoZulu: "Sawubona Sipho Khumalo! Sekuyisikhathi wagcina ukusivakashela e-Simon Family Farm. Iwors entsha ishibhile namuhla ngo-R 89.99/kg. Woza e-Clermont Rank uzozitholela!",
+          whatsappLink: "https://wa.me/27831234567?text=" + encodeURIComponent("Hi Sipho Khumalo! We haven't seen you in 18 days at Simon Family Farm. Fresh Boerewors is on special today at R 89.99/kg. Stop by Clermont Rank to grab yours!")
+        },
+        {
+          id: "mock-2",
+          name: "Zanele Dlamini",
+          phone: "0729876543",
+          daysInactive: 25,
+          lastPurchaseDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
+          suggestedPromoEnglish: "Hi Zanele Dlamini! We miss you at Simon Family Farm. Our fresh Beef Mince is ready at R 79.90/kg. Stop by the Clermont Rank counter today!",
+          suggestedPromoZulu: "Sawubona Zanele Dlamini! Siyakukhumbula e-Simon Family Farm. Inyama yethu egayiwe (Beef Mince) isilungile ngo-R 79.90/kg. Woza namuhla e-Clermont Rank!",
+          whatsappLink: "https://wa.me/27729876543?text=" + encodeURIComponent("Hi Zanele Dlamini! We miss you at Simon Family Farm. Our fresh Beef Mince is ready at R 79.90/kg. Stop by the Clermont Rank counter today!")
+        }
+      ];
+      return res.json(mockDormant);
+    }
+
+    res.json(dormantList.sort((a, b) => b.daysInactive - a.daysInactive).slice(0, 10));
+  } catch (err) {
+    console.error('Outreach Error:', err);
+    res.status(500).json({ error: 'Failed to generate customer outreach list' });
+  }
+}

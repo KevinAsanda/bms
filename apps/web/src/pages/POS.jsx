@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import CustomerSelector from '../components/POS/CustomerSelector';
+import CameraScanner from '../components/POS/CameraScanner';
 
 export default function POS() {
   const { items, addItem, removeItem, updateQuantity, updateWeight, clearCart, getGrandTotal } = useCartStore();
@@ -17,6 +18,7 @@ export default function POS() {
   const [loading, setLoading] = useState(false);
   const [receipt, setReceipt] = useState(null);
   const [toast, setToast] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   
   const barcodeRef = useRef(null);
 
@@ -46,6 +48,45 @@ export default function POS() {
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleCameraScan = async (scannedBarcode) => {
+    if (!scannedBarcode) return;
+
+    // Scale barcode: EAN-13 random weight starts with "20" and has length 13
+    if (scannedBarcode.startsWith('20') && scannedBarcode.length === 13) {
+      const productCode = scannedBarcode.substring(2, 6);
+      const weightGrams = parseInt(scannedBarcode.substring(7, 12), 10);
+      const weightKg = weightGrams / 1000;
+
+      try {
+        const response = await api.get(`/products/barcode/${productCode}`);
+        const product = response.data;
+        
+        // Add to cart
+        addItem(product);
+        
+        // Update its weight
+        updateWeight(product.id, weightKg);
+        
+        showToast(`Added ${product.name} (${weightKg.toFixed(3)} kg)`);
+        setIsCameraOpen(false);
+      } catch (err) {
+        console.error('Scale product lookup failed', err);
+        showToast('Scale product not found', 'error');
+      }
+    } else {
+      // Standard barcode scan
+      try {
+        const response = await api.get(`/products/barcode/${scannedBarcode}`);
+        addItem(response.data);
+        showToast(`Added ${response.data.name}`);
+        setIsCameraOpen(false);
+      } catch (err) {
+        console.error('Barcode lookup failed', err);
+        showToast('Product not found', 'error');
+      }
+    }
   };
 
   const handleBarcodeSubmit = async (e) => {
@@ -145,13 +186,23 @@ export default function POS() {
               Barcode Scanner Active (Ready for input)
             </span>
           </div>
-          <button 
-            onClick={() => barcodeRef.current?.focus()}
-            className="btn-secondary btn-sm flex items-center gap-2"
-          >
-            <Scan size={14} />
-            <span>Refocus Scanner</span>
-          </button>
+          <div className="flex gap-2">
+            <button 
+              type="button"
+              onClick={() => setIsCameraOpen(true)}
+              className="btn-primary btn-sm flex items-center gap-2 cursor-pointer"
+            >
+              <Scan size={14} />
+              <span>Camera Scale Scanner</span>
+            </button>
+            <button 
+              type="button"
+              onClick={() => barcodeRef.current?.focus()}
+              className="btn-secondary btn-sm flex items-center gap-2 cursor-pointer"
+            >
+              <span>Refocus Scanner</span>
+            </button>
+          </div>
         </div>
 
         {/* Product Search */}
@@ -482,6 +533,16 @@ export default function POS() {
           </div>
         </div>
       )}
+
+      {/* Camera Scale Scanner Modal */}
+      <CameraScanner 
+        isOpen={isCameraOpen} 
+        onClose={() => {
+          setIsCameraOpen(false);
+          barcodeRef.current?.focus();
+        }} 
+        onScan={handleCameraScan} 
+      />
     </div>
   );
 }

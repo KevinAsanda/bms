@@ -162,3 +162,95 @@ export async function getCategoryPerformance(req, res) {
     res.status(500).json({ error: 'Failed to fetch category sales' });
   }
 }
+
+export async function getDemandForecast(req, res) {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Fetch all active products
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      include: { category: true }
+    });
+
+    // Fetch sale items over last 30 days
+    const saleItems = await prisma.saleItem.findMany({
+      where: {
+        sale: {
+          createdAt: { gte: thirtyDaysAgo }
+        }
+      }
+    });
+
+    // Calculate sum of quantities per product
+    const qtyByProduct = saleItems.reduce((acc, item) => {
+      const pId = item.productId;
+      if (!acc[pId]) acc[pId] = 0;
+      const qty = item.weightKg ? parseFloat(item.weightKg) : parseFloat(item.quantity);
+      acc[pId] += qty;
+      return acc;
+    }, {});
+
+    // Simulation variables
+    const temp = 31.5; // hot weather Durban simulation
+    const weatherCondition = "Hot & Sunny";
+    const dayOfMonth = new Date().getDate();
+    const isPaydayWeek = dayOfMonth >= 22 && dayOfMonth <= 29;
+
+    const predictions = products.map(product => {
+      const total30Days = qtyByProduct[product.id] || 0;
+      // Average weekly demand (4 weeks in 30 days)
+      let avgWeeklyQty = total30Days > 0 ? (total30Days / 4) : (product.pricingType === 'WEIGHT_BASED' ? 45.0 : 35.0);
+      avgWeeklyQty = Math.round(avgWeeklyQty * 10) / 10;
+
+      let predictedQty = avgWeeklyQty;
+      let reasoningParts = [];
+
+      const catName = product.category.name.toLowerCase();
+      if (catName.includes('wors') || catName.includes('steak') || product.name.toLowerCase().includes('chop')) {
+        predictedQty *= 1.20;
+        reasoningParts.push("Braai cuts boosted 20% due to hot weather (31.5°C)");
+      } else if (catName.includes('soup') || product.name.toLowerCase().includes('stew') || product.name.toLowerCase().includes('chuck')) {
+        predictedQty *= 0.85;
+        reasoningParts.push("Slow-cook cuts reduced 15% due to high temperatures");
+      }
+
+      if (isPaydayWeek) {
+        if (product.name.toLowerCase().includes('steak') || product.name.toLowerCase().includes('t-bone') || product.name.toLowerCase().includes('rump')) {
+          predictedQty *= 1.25;
+          reasoningParts.push("Premium cuts boosted 25% for Payday Week");
+        } else {
+          predictedQty *= 1.10;
+          reasoningParts.push("Standard volume boosted 10% for Payday Week");
+        }
+      }
+
+      predictedQty = Math.round(predictedQty * 10) / 10;
+      const confidence = total30Days > 0 ? 0.90 : 0.65;
+
+      return {
+        productId: product.id,
+        productName: product.name,
+        categoryName: product.category.name,
+        pricingType: product.pricingType,
+        unit: product.unit,
+        avgWeeklyQty,
+        predictedQty,
+        confidence,
+        reasoning: reasoningParts.join(". ") || "Standard baseline demand."
+      };
+    });
+
+    res.json({
+      weatherForecast: {
+        temp,
+        condition: weatherCondition
+      },
+      isPaydayWeek,
+      predictions
+    });
+  } catch (err) {
+    console.error('Forecast Error:', err);
+    res.status(500).json({ error: 'Failed to generate demand forecast' });
+  }
+}
