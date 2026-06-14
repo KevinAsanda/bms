@@ -191,11 +191,27 @@ export async function getDemandForecast(req, res) {
       return acc;
     }, {});
 
-    // Simulation variables
-    const temp = 31.5; // hot weather Durban simulation
-    const weatherCondition = "Hot & Sunny";
-    const dayOfMonth = new Date().getDate();
-    const isPaydayWeek = dayOfMonth >= 22 && dayOfMonth <= 29;
+    // Realtime date and seasonal calculations
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const dayOfMonth = today.getDate();
+    
+    // Determine simulated Durban weather variables based on actual current month
+    let temp = 25.0;
+    let weatherCondition = "Warm & Partly Cloudy";
+    
+    if (currentMonth === 11 || currentMonth === 0 || currentMonth === 1 || currentMonth === 10) { // Nov, Dec, Jan, Feb (Durban Summer)
+      temp = 31.5;
+      weatherCondition = "Hot & Sunny";
+    } else if (currentMonth >= 4 && currentMonth <= 7) { // May, Jun, Jul, Aug (Durban Winter)
+      temp = 20.5;
+      weatherCondition = "Cool & Clear";
+    } else { // Mar, Apr, Sep, Oct (Spring/Autumn)
+      temp = 25.5;
+      weatherCondition = "Warm & Partly Cloudy";
+    }
+
+    const isPaydayWeek = dayOfMonth >= 25 && dayOfMonth <= 31;
 
     const predictions = products.map(product => {
       const total30Days = qtyByProduct[product.id] || 0;
@@ -207,26 +223,40 @@ export async function getDemandForecast(req, res) {
       let reasoningParts = [];
 
       const catName = product.category.name.toLowerCase();
-      if (catName.includes('wors') || catName.includes('steak') || product.name.toLowerCase().includes('chop')) {
-        predictedQty *= 1.20;
-        reasoningParts.push("Braai cuts boosted 20% due to hot weather (31.5°C)");
-      } else if (catName.includes('soup') || product.name.toLowerCase().includes('stew') || product.name.toLowerCase().includes('chuck')) {
-        predictedQty *= 0.85;
-        reasoningParts.push("Slow-cook cuts reduced 15% due to high temperatures");
+      const prodName = product.name.toLowerCase();
+
+      // Dynamic seasonal weather demand multipliers
+      if (temp >= 28) {
+        if (catName.includes('wors') || catName.includes('steak') || prodName.includes('chop')) {
+          predictedQty *= 1.25;
+          reasoningParts.push(`Braai cuts boosted 25% due to hot Durban summer (${temp}°C)`);
+        } else if (catName.includes('soup') || prodName.includes('stew') || prodName.includes('chuck')) {
+          predictedQty *= 0.80;
+          reasoningParts.push(`Slow-cook stewing cuts reduced 20% due to summer heat (${temp}°C)`);
+        }
+      } else if (temp <= 22) {
+        if (catName.includes('wors') || catName.includes('steak') || prodName.includes('chop')) {
+          predictedQty *= 0.85;
+          reasoningParts.push(`Braai cuts reduced 15% due to cool winter conditions (${temp}°C)`);
+        } else if (catName.includes('soup') || prodName.includes('stew') || prodName.includes('chuck')) {
+          predictedQty *= 1.35;
+          reasoningParts.push(`Slow-cook stewing cuts boosted 35% due to cool winter (${temp}°C)`);
+        }
       }
 
+      // Payday surges
       if (isPaydayWeek) {
-        if (product.name.toLowerCase().includes('steak') || product.name.toLowerCase().includes('t-bone') || product.name.toLowerCase().includes('rump')) {
-          predictedQty *= 1.25;
-          reasoningParts.push("Premium cuts boosted 25% for Payday Week");
+        if (prodName.includes('steak') || prodName.includes('t-bone') || prodName.includes('rump')) {
+          predictedQty *= 1.30;
+          reasoningParts.push("Premium cuts boosted 30% for Payday Week");
         } else {
-          predictedQty *= 1.10;
-          reasoningParts.push("Standard volume boosted 10% for Payday Week");
+          predictedQty *= 1.15;
+          reasoningParts.push("Standard volume boosted 15% for Payday Week");
         }
       }
 
       predictedQty = Math.round(predictedQty * 10) / 10;
-      const confidence = total30Days > 0 ? 0.90 : 0.65;
+      const confidence = total30Days > 0 ? 0.95 : 0.65;
 
       return {
         productId: product.id,
