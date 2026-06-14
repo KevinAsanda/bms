@@ -1,0 +1,763 @@
+{
+  "nodes": [
+    {
+      "id": "src_app_app",
+      "label": "App Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/App.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_main_main",
+      "label": "Main Entry Point",
+      "file_type": "code",
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "api_axios_api",
+      "label": "Axios API Client",
+      "file_type": "code",
+      "source_file": "apps/web/src/api/axios.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "components_navigation_navigation",
+      "label": "Navigation Sidebar",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Navigation.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "components_protectedroute_protectedroute",
+      "label": "ProtectedRoute Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/ProtectedRoute.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "components_themetoggle_themetoggle",
+      "label": "ThemeToggle Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/ThemeToggle.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_categorymanager_categorymanager",
+      "label": "CategoryManager Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Inventory/CategoryManager.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_productmodal_productmodal",
+      "label": "ProductModal Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Inventory/ProductModal.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_producttable_producttable",
+      "label": "ProductTable Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Inventory/ProductTable.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_stockadjustmodal_stockadjustmodal",
+      "label": "StockAdjustModal Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Inventory/StockAdjustModal.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_stockhistory_stockhistory",
+      "label": "StockHistory Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/Inventory/StockHistory.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pos_customerselector_customerselector",
+      "label": "CustomerSelector Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/POS/CustomerSelector.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "virtualkeyboard_numpadlayout_numpadlayout",
+      "label": "NumpadLayout Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/VirtualKeyboard/NumpadLayout.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "virtualkeyboard_qwertylayout_qwertylayout",
+      "label": "QwertyLayout Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/VirtualKeyboard/QwertyLayout.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "virtualkeyboard_index_virtualkeyboard",
+      "label": "VirtualKeyboard Component",
+      "file_type": "code",
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_admin_admin",
+      "label": "Admin Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Admin.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_dashboard_dashboard",
+      "label": "Dashboard Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Dashboard.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_inventory_inventory",
+      "label": "Inventory Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_login_login",
+      "label": "Login Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Login.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_pos_pos",
+      "label": "POS Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_reports_reports",
+      "label": "Reports Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Reports.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pages_settings_settings",
+      "label": "Settings Page",
+      "file_type": "code",
+      "source_file": "apps/web/src/pages/Settings.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "src_main_main",
+      "target": "pages_login_login",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_inventory_inventory",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_dashboard_dashboard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_pos_pos",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_admin_admin",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_reports_reports",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "pages_settings_settings",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "components_protectedroute_protectedroute",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_main",
+      "target": "virtualkeyboard_index_virtualkeyboard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/main.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "components_protectedroute_protectedroute",
+      "target": "components_navigation_navigation",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/ProtectedRoute.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "components_protectedroute_protectedroute",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/ProtectedRoute.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "components_navigation_navigation",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/Navigation.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "api_axios_api",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/api/axios.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_login_login",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Login.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_login_login",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Login.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_dashboard_dashboard",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Dashboard.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_dashboard_dashboard",
+      "target": "components_themetoggle_themetoggle",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Dashboard.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_admin_admin",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Admin.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_reports_reports",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Reports.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_settings_settings",
+      "target": "store_settingsstore_usesettingsstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Settings.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_producttable_producttable",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_productmodal_productmodal",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_stockadjustmodal_stockadjustmodal",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_categorymanager_categorymanager",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_stockhistory_stockhistory",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_categorymanager_categorymanager",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/Inventory/CategoryManager.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_stockhistory_stockhistory",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/Inventory/StockHistory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_pos_pos",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_pos_pos",
+      "target": "store_cartstore_usecartstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_pos_pos",
+      "target": "store_authstore_useauthstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_pos_pos",
+      "target": "pos_customerselector_customerselector",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pos_customerselector_customerselector",
+      "target": "api_axios_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/POS/CustomerSelector.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_index_virtualkeyboard",
+      "target": "store_keyboardstore_usekeyboardstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_index_virtualkeyboard",
+      "target": "store_settingsstore_usesettingsstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_index_virtualkeyboard",
+      "target": "virtualkeyboard_qwertylayout_qwertylayout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_index_virtualkeyboard",
+      "target": "virtualkeyboard_numpadlayout_numpadlayout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_qwertylayout_qwertylayout",
+      "target": "store_keyboardstore_usekeyboardstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/QwertyLayout.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_numpadlayout_numpadlayout",
+      "target": "store_keyboardstore_usekeyboardstore",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/NumpadLayout.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_pos_pos",
+      "target": "pos_customerselector_customerselector",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/src/pages/POS.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_producttable_producttable",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_productmodal_productmodal",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_inventory_inventory",
+      "target": "inventory_stockadjustmodal_stockadjustmodal",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/web/src/pages/Inventory.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "virtualkeyboard_qwertylayout_qwertylayout",
+      "target": "virtualkeyboard_numpadlayout_numpadlayout",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/src/components/VirtualKeyboard/QwertyLayout.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "inventory_productmodal_productmodal",
+      "target": "inventory_stockadjustmodal_stockadjustmodal",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "apps/web/src/components/Inventory/ProductModal.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "pages_dashboard_dashboard",
+      "target": "pages_reports_reports",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/web/src/pages/Dashboard.jsx",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "virtual_keyboard_flow",
+      "label": "Virtual Keyboard Flow",
+      "nodes": [
+        "virtualkeyboard_index_virtualkeyboard",
+        "virtualkeyboard_qwertylayout_qwertylayout",
+        "virtualkeyboard_numpadlayout_numpadlayout"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/components/VirtualKeyboard/index.jsx"
+    },
+    {
+      "id": "inventory_management_system",
+      "label": "Inventory Management UI Flow",
+      "nodes": [
+        "pages_inventory_inventory",
+        "inventory_producttable_producttable",
+        "inventory_productmodal_productmodal",
+        "inventory_stockadjustmodal_stockadjustmodal",
+        "inventory_categorymanager_categorymanager",
+        "inventory_stockhistory_stockhistory"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/Inventory.jsx"
+    },
+    {
+      "id": "pos_checkout_flow",
+      "label": "POS Checkout Flow",
+      "nodes": [
+        "pages_pos_pos",
+        "pos_customerselector_customerselector"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/web/src/pages/POS.jsx"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

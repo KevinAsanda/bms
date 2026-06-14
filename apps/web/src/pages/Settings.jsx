@@ -40,33 +40,11 @@ export default function Settings() {
               Appearance Theme
             </h2>
             <p className="text-xs text-[var(--color-text-secondary)] mb-6">
-              Switch visual presentation modes. Default is Dark Mode (optimized for terminal glare).
+              Visual presentation mode is locked to Dark Mode per system design regulations (Simon Family Farm standard).
             </p>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setTheme('dark')}
-                className={`flex flex-col items-center justify-center p-4 border transition-all cursor-pointer ${
-                  theme === 'dark'
-                    ? 'border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/5 text-[var(--color-text-primary)]'
-                    : 'border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]'
-                }`}
-                style={{ borderRadius: 0 }}
-              >
-                <Moon size={24} className="mb-2" />
-                <span className="text-xs uppercase tracking-widest font-black">Dark Mode</span>
-              </button>
-              <button
-                onClick={() => setTheme('light')}
-                className={`flex flex-col items-center justify-center p-4 border transition-all cursor-pointer ${
-                  theme === 'light'
-                    ? 'border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/5 text-[var(--color-text-primary)]'
-                    : 'border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]'
-                }`}
-                style={{ borderRadius: 0 }}
-              >
-                <Sun size={24} className="mb-2" />
-                <span className="text-xs uppercase tracking-widest font-black">Light Mode</span>
-              </button>
+            <div className="flex items-center justify-center p-4 border border-[var(--color-brand-red)] bg-[var(--color-brand-red)]/5 text-[var(--color-text-primary)]" style={{ borderRadius: 0 }}>
+              <Moon size={24} className="mr-2 text-[var(--color-brand-red)]" />
+              <span className="text-xs uppercase tracking-widest font-black">Dark Mode (Locked)</span>
             </div>
           </div>
 

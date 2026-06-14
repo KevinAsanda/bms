@@ -1,0 +1,35 @@
+import json
+from pathlib import Path
+
+labels = {
+    "0": "Web Frontend UI & Axios API Client",
+    "1": "Core API Controllers & Prisma Migration",
+    "2": "Backend Dependencies & Configurations",
+    "3": "Database Seed Scripts & Core Controllers",
+    "4": "Virtual Keyboard & Local Settings Management",
+    "5": "Frontend Core Dependencies",
+    "6": "Authentication & Rate Limiting API",
+    "7": "Frontend Dev Tooling & Testing Dependencies",
+    "8": "Employee Admin Controller & Routing",
+    "9": "Product & Catalogue Management API",
+    "10": "Category & Catalogue Tests & Controllers",
+    "11": "Core Seed Utility",
+    "12": "Deployment & Service Provisioning",
+    "13": "Frontend Root Component",
+    "14": "Project Documentation & Lockfiles",
+    "15": "Prisma Config Module",
+    "16": "Vitest Config Module",
+    "17": "Vitest Config Specifications",
+    "18": "Render Web Deployment",
+    "19": "Frontend Test Setup Module",
+    "20": "Testing Library Configuration",
+    "21": "ESLint Config Module",
+    "22": "ESLint Configuration Details",
+    "23": "Web Core HTML Template",
+    "24": "Web Package Specifications",
+    "25": "Vite Configuration Module",
+    "26": "Vite Dev Config Specifications"
+}
+
+Path('graphify-out/.graphify_labels.json').write_text(json.dumps(labels, indent=2, ensure_ascii=False), encoding="utf-8")
+print("Wrote labels to graphify-out/.graphify_labels.json")

@@ -12,6 +12,8 @@ import saleRoutes from './routes/saleRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 
+import { globalLimiter } from './middleware/rateLimiter.js';
+
 const app = express();
 
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'];
@@ -29,6 +31,7 @@ app.use(cors({
 }));
 
 app.use(helmet());
+app.use(globalLimiter);
 app.use(express.json());
 app.use(cookieParser());
 

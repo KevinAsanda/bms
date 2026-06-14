@@ -1,0 +1,903 @@
+{
+  "nodes": [
+    {
+      "id": "skills_lock_lock",
+      "label": "Skills Lock Configuration",
+      "file_type": "document",
+      "source_file": "skills-lock.json",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_overview",
+      "label": "Butchery Management System Overview",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_pos_checkout",
+      "label": "POS Checkout Feature",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_inventory_tracking",
+      "label": "Inventory & Stock Tracking Feature",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_popia_compliance",
+      "label": "POPIA-Compliant Customer Management",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_daily_cashups",
+      "label": "Daily Cash-Ups & Reports",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_owner_dashboard",
+      "label": "Owner Dashboard Feature",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "readme_rbac",
+      "label": "Role-Based Access Control Feature",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "render_bms_api_service",
+      "label": "BMS API Service Deployment",
+      "file_type": "document",
+      "source_file": "render.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "render_bms_web_service",
+      "label": "BMS Web Service Deployment",
+      "file_type": "document",
+      "source_file": "render.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "api_package_config",
+      "label": "API Package Config",
+      "file_type": "document",
+      "source_file": "apps/api/package.json",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "api_prisma_config_defineconfig",
+      "label": "Prisma Configuration",
+      "file_type": "code",
+      "source_file": "apps/api/prisma.config.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "api_server_startup",
+      "label": "API Server Startup",
+      "file_type": "code",
+      "source_file": "apps/api/server.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "api_vitest_config_vitest_config",
+      "label": "Vitest Configuration",
+      "file_type": "code",
+      "source_file": "apps/api/vitest.config.ts",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prisma_seed_main",
+      "label": "Database Seed Script",
+      "file_type": "code",
+      "source_file": "apps/api/prisma/seed.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "prisma_seedhistory_main",
+      "label": "Historical Sales Data Seed Script",
+      "file_type": "code",
+      "source_file": "apps/api/prisma/seedHistory.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "0_init_migration_tables",
+      "label": "Initial DB Schema Migration",
+      "file_type": "code",
+      "source_file": "apps/api/prisma/migrations/0_init/migration.sql",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_app_express_app",
+      "label": "Express Application Setup",
+      "file_type": "code",
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_authcontroller_login",
+      "label": "authController.login",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/authController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_authcontroller_logout",
+      "label": "authController.logout",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/authController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_authcontroller_refresh",
+      "label": "authController.refresh",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/authController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_categorycontroller_getcategories",
+      "label": "categoryController.getCategories",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/categoryController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_categorycontroller_createcategory",
+      "label": "categoryController.createCategory",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/categoryController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_categorycontroller_updatecategory",
+      "label": "categoryController.updateCategory",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/categoryController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_categorycontroller_deletecategory",
+      "label": "categoryController.deleteCategory",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/categoryController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_customercontroller_getcustomers",
+      "label": "customerController.getCustomers",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/customerController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_customercontroller_createcustomer",
+      "label": "customerController.createCustomer",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/customerController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_employeecontroller_getallemployees",
+      "label": "employeeController.getAllEmployees",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_employeecontroller_createemployee",
+      "label": "employeeController.createEmployee",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_employeecontroller_updateemployee",
+      "label": "employeeController.updateEmployee",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_employeecontroller_deactivateemployee",
+      "label": "employeeController.deactivateEmployee",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_employeecontroller_resetemployeepassword",
+      "label": "employeeController.resetEmployeePassword",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_productcontroller_getproducts",
+      "label": "productController.getProducts",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_productcontroller_getproductbybarcode",
+      "label": "productController.getProductByBarcode",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_productcontroller_createproduct",
+      "label": "productController.createProduct",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_productcontroller_updateproduct",
+      "label": "productController.updateProduct",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_productcontroller_archiveproduct",
+      "label": "productController.archiveProduct",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_reportcontroller_getdailysales",
+      "label": "reportController.getDailySales",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/reportController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_reportcontroller_getdashboardstats",
+      "label": "reportController.getDashboardStats",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/reportController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_reportcontroller_getcategoryperformance",
+      "label": "reportController.getCategoryPerformance",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/reportController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_salecontroller_createsale",
+      "label": "saleController.createSale",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/saleController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_salecontroller_getsalereceipt",
+      "label": "saleController.getSaleReceipt",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/saleController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stockcontroller_getstock",
+      "label": "stockController.getStock",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/stockController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stockcontroller_adjuststock",
+      "label": "stockController.adjustStock",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/stockController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stockcontroller_receivestock",
+      "label": "stockController.receiveStock",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/stockController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_stockcontroller_getadjustmenthistory",
+      "label": "stockController.getAdjustmentHistory",
+      "file_type": "code",
+      "source_file": "apps/api/src/controllers/stockController.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "middleware_auth_authmiddleware",
+      "label": "authMiddleware",
+      "file_type": "code",
+      "source_file": "apps/api/src/middleware/auth.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "middleware_ratelimiter_loginlimiter",
+      "label": "loginLimiter",
+      "file_type": "code",
+      "source_file": "apps/api/src/middleware/rateLimiter.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "middleware_rbac_rbacmiddleware",
+      "label": "rbacMiddleware",
+      "file_type": "code",
+      "source_file": "apps/api/src/middleware/rbac.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "api_server_startup",
+      "target": "src_app_express_app",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/server.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_authcontroller_login",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_employeecontroller_getallemployees",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_customercontroller_getcustomers",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_productcontroller_getproducts",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_categorycontroller_getcategories",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_salecontroller_createsale",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_stockcontroller_getstock",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_express_app",
+      "target": "controllers_reportcontroller_getdailysales",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/api/src/app.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_authcontroller_login",
+      "target": "middleware_ratelimiter_loginlimiter",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/api/src/controllers/authController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_authcontroller_login",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/authController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_categorycontroller_getcategories",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/categoryController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_customercontroller_getcustomers",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/customerController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_employeecontroller_getallemployees",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_productcontroller_getproducts",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_reportcontroller_getdailysales",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/reportController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_salecontroller_createsale",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/saleController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_stockcontroller_getstock",
+      "target": "0_init_migration_tables",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/controllers/stockController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_pos_checkout",
+      "target": "controllers_salecontroller_createsale",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_inventory_tracking",
+      "target": "controllers_stockcontroller_getstock",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_popia_compliance",
+      "target": "controllers_customercontroller_createcustomer",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_daily_cashups",
+      "target": "controllers_reportcontroller_getdailysales",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_owner_dashboard",
+      "target": "controllers_reportcontroller_getdashboardstats",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "readme_rbac",
+      "target": "middleware_rbac_rbacmiddleware",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "render_bms_api_service",
+      "target": "api_package_config",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "render.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "render_bms_api_service",
+      "target": "api_server_startup",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "render.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "render_bms_api_service",
+      "target": "api_prisma_config_defineconfig",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "render.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "prisma_seed_main",
+      "target": "prisma_seedhistory_main",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/api/prisma/seed.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_employeecontroller_createemployee",
+      "target": "controllers_customercontroller_createcustomer",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "apps/api/src/controllers/employeeController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_productcontroller_createproduct",
+      "target": "controllers_categorycontroller_createcategory",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "apps/api/src/controllers/productController.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "skills_lock_lock",
+      "target": "readme_overview",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "skills-lock.json",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "authentication_and_session_management",
+      "label": "Authentication & Session Management",
+      "nodes": [
+        "controllers_authcontroller_login",
+        "controllers_authcontroller_logout",
+        "controllers_authcontroller_refresh",
+        "middleware_auth_authmiddleware",
+        "middleware_ratelimiter_loginlimiter"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/app.js"
+    },
+    {
+      "id": "inventory_and_stock_management",
+      "label": "Inventory & Stock Management",
+      "nodes": [
+        "controllers_productcontroller_getproducts",
+        "controllers_productcontroller_createproduct",
+        "controllers_stockcontroller_getstock",
+        "controllers_stockcontroller_adjuststock",
+        "controllers_stockcontroller_receivestock"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/app.js"
+    },
+    {
+      "id": "sales_and_reporting_flow",
+      "label": "Sales & Reporting Flow",
+      "nodes": [
+        "controllers_salecontroller_createsale",
+        "controllers_reportcontroller_getdailysales",
+        "controllers_reportcontroller_getdashboardstats",
+        "controllers_reportcontroller_getcategoryperformance"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "apps/api/src/app.js"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

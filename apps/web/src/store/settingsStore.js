@@ -36,17 +36,17 @@ const setStorageItem = (key, value) => {
 };
 
 // Initial theme check
-const initialTheme = getStorageItem('bms-theme', 'dark'); // default to dark per GEMINI.md
+const initialTheme = 'dark'; // locked to dark per GEMINI.md
 applyTheme(initialTheme);
 
 export const useSettingsStore = create((set) => ({
-  theme: initialTheme,
+  theme: 'dark',
   inputMode: getStorageItem('bms-input-mode', 'mouse'), // 'mouse' | 'touch'
 
   setTheme: (theme) => {
-    setStorageItem('bms-theme', theme);
-    applyTheme(theme);
-    set({ theme });
+    setStorageItem('bms-theme', 'dark');
+    applyTheme('dark');
+    set({ theme: 'dark' });
   },
 
   setInputMode: (inputMode) => {

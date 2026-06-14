@@ -1,0 +1,1 @@
+{"nodes": [{"id": "api_prisma_config_defineconfig", "label": "Prisma Configuration", "file_type": "code", "source_file": "apps/api/prisma.config.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

@@ -108,11 +108,11 @@ export async function createSale(req, res) {
 
     res.status(201).json(result);
   } catch (err) {
-    console.error('Sale Transaction Error:', err.message);
-    if (err.message.includes('Insufficient stock')) {
+    console.error('Sale Transaction Error:', err);
+    if (err.message && err.message.includes('Insufficient stock')) {
       return res.status(409).json({ error: err.message });
     }
-    res.status(500).json({ error: err.message || 'Sale could not be completed. Please try again.' });
+    res.status(500).json({ error: 'Sale could not be completed. Please try again.' });
   }
 }
 
