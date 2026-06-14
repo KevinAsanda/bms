@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
 import Admin from './pages/Admin'
 import Settings from './pages/Settings'
+import Relations from './pages/Relations'
 import ProtectedRoute from './components/ProtectedRoute'
 import VirtualKeyboard from './components/VirtualKeyboard'
 import './index.css'
@@ -35,6 +36,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/pos" element={
           <ProtectedRoute allowedRoles={['OWNER', 'CASHIER']}>
             <POS />
+          </ProtectedRoute>
+        } />
+        <Route path="/relations" element={
+          <ProtectedRoute allowedRoles={['OWNER']}>
+            <Relations />
           </ProtectedRoute>
         } />
         <Route path="/admin" element={

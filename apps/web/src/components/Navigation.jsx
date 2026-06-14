@@ -6,7 +6,8 @@ import {
   Warehouse, 
   ShieldCheck, 
   Settings,
-  LogOut 
+  LogOut,
+  HeartHandshake
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -15,6 +16,7 @@ export default function Navigation() {
   
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['OWNER'] },
+    { name: 'Customer Relations', path: '/relations', icon: HeartHandshake, roles: ['OWNER'] },
     { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['OWNER'] },
     { name: 'POS', path: '/pos', icon: ShoppingCart, roles: ['OWNER', 'CASHIER'] },
     { name: 'Inventory', path: '/inventory', icon: Warehouse, roles: ['OWNER', 'STOCK_MANAGER'] },

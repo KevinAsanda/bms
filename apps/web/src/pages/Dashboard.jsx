@@ -9,24 +9,17 @@ import {
   Wallet,
   CreditCard,
   Banknote,
-  Award,
-  Send
+  Award
 } from 'lucide-react';
 import api from '../api/axios';
 import { NavLink } from 'react-router-dom';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import { useAuthStore } from '../store/authStore';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  const user = useAuthStore((state) => state.user);
-  const [dormantCustomers, setDormantCustomers] = useState([]);
-  const [outreachLoading, setOutreachLoading] = useState(false);
-  const [activeLang, setActiveLang] = useState({}); // customerId -> 'EN' | 'ZU'
 
   const fetchStats = useCallback(async () => {
     // yield execution to the microtask queue to avoid synchronous setState warnings inside useEffect
@@ -43,35 +36,12 @@ export default function Dashboard() {
     }
   }, []);
 
-  const fetchDormant = useCallback(async () => {
-    if (user?.role !== 'OWNER') return;
-    setOutreachLoading(true);
-    try {
-      const res = await api.get('/customers/dormant');
-      setDormantCustomers(res.data);
-      // Initialize language state
-      const initialLang = {};
-      res.data.forEach(c => {
-        initialLang[c.id] = 'ZU'; // Default to Zulu for Durban/Clermont area!
-      });
-      setActiveLang(initialLang);
-    } catch (err) {
-      console.error('Failed to fetch dormant customers', err);
-    } finally {
-      setOutreachLoading(false);
-    }
-  }, [user]);
-
   useEffect(() => {
     fetchStats();
-    fetchDormant();
     // Auto-refresh every 5 minutes
-    const interval = setInterval(() => {
-      fetchStats();
-      fetchDormant();
-    }, 300000);
+    const interval = setInterval(fetchStats, 300000);
     return () => clearInterval(interval);
-  }, [fetchStats, fetchDormant]);
+  }, [fetchStats]);
 
   // Generate chart data based on recent sales
   const getChartData = () => {
@@ -231,100 +201,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Customer Loyalty Outreach (OWNER Only) */}
-      {user?.role === 'OWNER' && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2 font-[var(--font-display)]">
-            <Award size={18} className="text-[var(--color-brand-red)]" />
-            AI-Powered Customer Loyalty Outreach
-          </h2>
-          
-          {outreachLoading ? (
-            <div className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] p-8 text-center rounded-sm">
-              <RefreshCw className="animate-spin text-[var(--color-brand-red)] mx-auto mb-2" size={24} />
-              <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider font-bold">Analyzing purchase patterns...</p>
-            </div>
-          ) : dormantCustomers.length === 0 ? (
-            <div className="bg-[var(--color-success-bg)] border border-[var(--color-success)]/10 p-6 text-center rounded-sm">
-              <p className="text-sm font-bold text-[var(--color-success)] m-0">All registered customers are active (visited in last 14 days)</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
-              {dormantCustomers.map((customer) => {
-                const cleanPhone = customer.phone ? customer.phone.replace(/[^0-9]/g, '') : '';
-                const waPhone = cleanPhone.startsWith('0') ? `27${cleanPhone.slice(1)}` : cleanPhone;
-                const lang = activeLang[customer.id] || 'ZU';
-                const message = lang === 'ZU' ? customer.suggestedPromoZulu : customer.suggestedPromoEnglish;
-                const waLink = `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
 
-                return (
-                  <div key={customer.id} className="bg-[var(--color-surface-card)] border border-[var(--color-border-default)] p-5 rounded-md flex flex-col justify-between hover:border-[var(--color-brand-red)]/35 transition-all">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-bold text-base text-[var(--color-text-primary)] m-0">
-                            {customer.name}
-                          </h3>
-                          <span className="text-[10px] font-mono font-bold text-[var(--color-text-secondary)] block mt-0.5">
-                            {customer.phone || 'No phone'}
-                          </span>
-                        </div>
-                        <span className="badge badge-steel text-[10px] font-bold">
-                          {customer.daysInactive} days inactive
-                        </span>
-                      </div>
-
-                      <div className="flex bg-[var(--color-surface-input)] p-1 rounded-sm text-[10px] font-bold uppercase w-fit">
-                        <button
-                          onClick={() => setActiveLang(prev => ({ ...prev, [customer.id]: 'ZU' }))}
-                          className={`px-3 py-1.5 rounded-sm transition-all cursor-pointer ${
-                            lang === 'ZU' 
-                              ? 'bg-[var(--color-brand-red)] text-white' 
-                              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-                          }`}
-                        >
-                          isiZulu
-                        </button>
-                        <button
-                          onClick={() => setActiveLang(prev => ({ ...prev, [customer.id]: 'EN' }))}
-                          className={`px-3 py-1.5 rounded-sm transition-all cursor-pointer ${
-                            lang === 'EN' 
-                              ? 'bg-[var(--color-brand-red)] text-white' 
-                              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-                          }`}
-                        >
-                          English
-                        </button>
-                      </div>
-
-                      <div className="bg-[var(--color-surface-input)] p-3 border border-[var(--color-border-default)] rounded-sm min-h-[72px]">
-                        <p className="text-xs text-[var(--color-text-secondary)] italic m-0 line-clamp-3">
-                          "{message}"
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-[var(--color-border-default)]/60 flex justify-between items-center">
-                      <span className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
-                        POPIA Consent Verified
-                      </span>
-                      <a
-                        href={waLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary btn-sm flex items-center gap-2 !py-2 !px-4 hover:opacity-90"
-                      >
-                        <Send size={12} />
-                        <span>Send WhatsApp</span>
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Lower Section (Recent Sales & Inventory Alerts) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
