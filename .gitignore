@@ -36,3 +36,6 @@ supabase/.temp/
 # Ignore markdown files except README.md
 /*.md
 !/README.md
+
+# Test output
+test-results/
