@@ -17,7 +17,8 @@ node_modules/
 # Project-specific folders to ignore
 /.agents/
 /.playwright-mcp/
-/docs/
+/docs/*
+!/docs/screenshots/
 
 # Design assets and screenshots in root to ignore
 /Screenshot.png.jpg

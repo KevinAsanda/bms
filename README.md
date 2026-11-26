@@ -1,120 +1,146 @@
-# Simon Family Farm — Butchery Management System (BMS)
+<div align="center">
+  <img src="apps/web/public/logo-icon.svg" alt="Simon Family Farm BMS Logo" width="96" />
+  <h1>Simon Family Farm — Butchery Management System (BMS)</h1>
+  <p>
+    <strong>Full-stack Progressive Web App for retail butchery operations with tablet-first POS checkout, real-time stock deductions, RBAC, and POPIA AES-256-GCM PII encryption.</strong>
+  </p>
 
-A production-ready, full-stack Progressive Web Application (PWA) designed to replace paper notebooks and manual operations at the Simon Family Farm Butchery located at Clermont Rank, Durban, South Africa. 
+  <p>
+    <img src="https://img.shields.io/badge/React-19%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+    <img src="https://img.shields.io/badge/Express-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Express" />
+    <img src="https://img.shields.io/badge/Prisma-PostgreSQL-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma PostgreSQL" />
+    <img src="https://img.shields.io/badge/Security-AES--256--GCM%20%2B%20RBAC-dc2626?style=for-the-badge" alt="POPIA Security" />
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License" /></a>
+  </p>
 
-This system provides real-time Point of Sale (POS) checkout, automated stock tracking, secure customer management, and comprehensive daily reports and dashboard analytics for butchery managers and owners.
-
----
-
-## 🚀 Key Features
-
-* **POS Checkout**: Optimized touch-friendly interface designed for tablet viewports (`768px`) at the sales counter. Cashiers can scan barcodes or select items manually and complete a sale in under 60 seconds.
-* **Real-time Inventory & Stock Tracking**: Automatic stock deductions upon sales with low-stock alerts and weekly supplier delivery logging.
-* **POPIA-Compliant Customer Management**: Zulu/SA customer directory with AES-256-GCM encryption-at-rest for PII (names, phone numbers) to ensure compliance with the Protection of Personal Information Act.
-* **Daily Cash-Ups & Reports**: Automated end-of-day reports summarizing card, cash, and EFT sales, transaction volume, and overall revenue.
-* **Owner Dashboard**: High-level sales ledger charts, revenue trends, top-selling products, and stock alert indicators.
-* **Role-Based Access Control (RBAC)**: Enforced boundaries for `OWNER`, `CASHIER`, and `STOCK_MANAGER` across all API endpoints and frontend screens.
-
----
-
-## 🛠️ Technology Stack
-
-* **Frontend**: React + Vite + Tailwind CSS + Zustand (State Management) + Recharts (Dashboard Visualization) + Lucide React (Icons)
-* **Backend**: Node.js + Express + Prisma ORM + PostgreSQL
-* **Security & Auth**: JWT (HS256 access tokens, httpOnly refresh cookies), bcrypt (cost factor 12) password hashing, AES-256-GCM (for PII encryption).
+  <p>
+    <a href="#-screenshots">Screenshots</a> •
+    <a href="#-features">Features</a> •
+    <a href="#%EF%B8%8F-architecture--tech-stack">Architecture</a> •
+    <a href="#-getting-started">Getting Started</a>
+  </p>
+</div>
 
 ---
 
-## 📂 Project Structure
+## What Is Simon Family Farm BMS?
 
+**Simon Family Farm BMS** is a full-stack Progressive Web App (PWA) engineered to replace paper notebooks and manual cash-ups at Simon Family Farm Butchery in Clermont Rank, Durban, South Africa.
+
+It delivers sub-60-second **tablet POS checkout** with variable-weight EAN-13 barcode scanning, automatic inventory deductions, **POPIA-compliant AES-256-GCM encryption at rest** for customer PII, role-based access control (`OWNER`, `CASHIER`, `STOCK_MANAGER`), and daily cash-up analytics.
+
+---
+
+## 📱 Screenshots
+
+*(Captured locally from the React + Vite frontend with synthetic demo data — no live store PII.)*
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/02-owner-dashboard.png" alt="BMS Owner Dashboard with ZAR Revenue and 7-Day Sales Trend" width="100%" /><br />
+      <sub><strong>Owner Dashboard</strong> — Live ZAR revenue KPIs, 7-day Recharts trend &amp; low-stock alerts</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/screenshots/03-pos-tablet.png" alt="BMS Tablet POS Counter Checkout" width="100%" /><br />
+      <sub><strong>Tablet POS Checkout</strong> — Touch-friendly 1024×768 counter layout with live cart &amp; Cash/Card/EFT split</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="docs/screenshots/01-login.png" alt="BMS Role-Gated Sign In with POPIA Notice" width="70%" /><br />
+      <sub><strong>Role-Gated Authentication</strong> — Employee login with POPIA compliance notice &amp; inactivity lock</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## ✨ Features
+
+- **Tablet-First POS Checkout**: Built for counter viewports (`768px`–`1024px`) with hardware & camera EAN-13 weight-embedded barcode scanning (`20xxxx`), on-screen virtual keyboard/numpad, and Cash / Card / EFT settlement.
+- **Real-Time Stock & Supplier Tracking**: Automatic stock deductions per sale, low-stock threshold alerts, and supplier delivery audit logs.
+- **POPIA-Compliant Customer Encryption**: Customer names and phone numbers are encrypted at rest using **AES-256-GCM** before PostgreSQL storage, paired with explicit POPIA consent capture.
+- **Owner Intelligence & Daily Cash-Ups**: Recharts revenue trends, top-selling cuts, payment method breakdowns, and end-of-day reconciliation reports.
+- **Strict RBAC & Audit Trail**: JWT access tokens + `httpOnly` refresh cookies, bcrypt password hashing (cost 12), inactivity auto-logout, and immutable `AuditLog` entries for critical mutations.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```mermaid
+flowchart LR
+  POS["Counter Tablet / Owner Browser (React + Vite PWA)"] -->|JWT + httpOnly Cookie| API["Express REST API (apps/api)"]
+  API --> Auth["Auth & RBAC Middleware (OWNER / CASHIER / STOCK_MANAGER)"]
+  API --> Crypto["AES-256-GCM PII Encryption Utility"]
+  API --> Prisma["Prisma ORM"]
+  Prisma --> DB["PostgreSQL / Supabase"]
 ```
+
+| Layer | Technology |
+| --- | --- |
+| **Frontend (`apps/web`)** | React 19, Vite, Tailwind CSS, Zustand, Recharts, Lucide Icons |
+| **Backend (`apps/api`)** | Node.js, Express, Prisma ORM, PostgreSQL |
+| **Security & Compliance** | JWT (HS256) + `httpOnly` refresh cookies, `bcrypt` (cost 12), AES-256-GCM PII encryption |
+| **Testing & Hosting** | Vitest API integration tests, Render Blueprint ([`render.yaml`](render.yaml)) |
+
+### Project Structure
+
+```text
 bms/
 ├── apps/
-│   ├── api/                     # Node.js + Express backend
-│   │   ├── src/                 # Controllers, routes, middleware, utils
-│   │   ├── prisma/              # Schema.prisma and migration logs
-│   │   └── tests/               # Integration & unit tests (Vitest)
-│   └── web/                     # React + Vite frontend
-│       ├── src/                 # Pages, components, hooks, stores
-│       └── public/              # Icons, manifest, logos
-├── README.md                    # Project documentation (You are here)
-├── render.yaml                  # Deployment blueprint
-└── supabase/                    # Local Database configs
+│   ├── api/                 # Express REST API, auth/RBAC middleware, AES-256-GCM utils & Vitest tests
+│   │   ├── prisma/          # schema.prisma, migrations, seed.js & seedHistory.js
+│   │   └── src/             # Controllers, routes, middleware, encryption utils
+│   └── web/                 # React 19 + Vite PWA (POS, Inventory, Dashboard, Reports, Relations, VirtualKeyboard)
+├── supabase/                # Local Supabase config
+├── docs/screenshots/        # UI screenshots used in README
+└── render.yaml              # Multi-service Render blueprint
 ```
 
 ---
 
-## ⚙️ Local Development Setup
+## 🚀 Getting Started
 
 ### Prerequisites
+- **Node.js 18+**
+- **PostgreSQL** (or Supabase instance)
 
-* Node.js (v18+)
-* PostgreSQL Database (or a Supabase instance)
-
-### 1. Database Configuration
-In `apps/api/.env`, configure your PostgreSQL credentials:
-```bash
+### 1. Configure Backend Environment
+Create `apps/api/.env`:
+```env
 DATABASE_URL="postgresql://user:pass@host:5432/bms?sslmode=require"
 DIRECT_URL="postgresql://user:pass@host:5432/bms?sslmode=require"
 JWT_SECRET="<64-character-random-key>"
 JWT_REFRESH_SECRET="<64-character-random-key>"
-ENCRYPTION_KEY="<32-byte-hex-key>" # For POPIA customer data encryption
+ENCRYPTION_KEY="<32-byte-hex-key>"
 ```
 
-### 2. Install Dependencies & Build Prisma Client
-Navigate to the root directory and install dependencies:
+### 2. Migrate, Seed & Run
 ```bash
-# Install API dependencies
+# Backend API (port 3001)
 cd apps/api
 npm install
-
-# Run database migrations
 npx prisma migrate dev --name init
-
-# Generate the Prisma Client
 npx prisma generate
-```
-
-### 3. Seed Database
-To seed the database with the initial Owner account (`admin@bms.local` / `Admin1234!`) and categories:
-```bash
 npx prisma db seed
-```
-
-To populate the database with **3 months of realistic historical sales** (highly recommended for testing dashboard metrics):
-```bash
 node prisma/seedHistory.js
-```
-
-### 4. Running the Applications
-Run both backend and frontend applications in development mode:
-
-**Backend API (Port `3001`):**
-```bash
-cd apps/api
 npm run dev
-```
 
-**Frontend React Web (Port `5173`):**
-```bash
-cd apps/web
+# Frontend PWA (port 5173)
+cd ../web
 npm install
 npm run dev
 ```
 
----
-
-## 🛡️ Security & Compliance Policies
-
-* **Authentication**: Every API endpoint (except `/auth/login`) is strictly protected by `authMiddleware` and `rbacMiddleware`.
-* **PII Encryption**: Customer names and phone numbers are encrypted before insertion into the PostgreSQL database.
-* **Audit Trail**: Every critical action (stock adjustments, sale completions, product edits) is automatically written to the `AuditLog` table.
-* **SQL Injection Prevention**: All queries are run via Prisma ORM parameterized statements, preventing raw SQL vulnerabilities.
+### 3. Run API Tests
+```bash
+cd apps/api
+npm test
+```
 
 ---
 
-## 🇿🇦 Durban Operating Context
+## 📄 License
 
-* **Currency**: All amounts are formatted in South African Rand (ZAR) prefixed with `R`.
-* **Tablet view**: POS interface is optimized for rapid touch entry (target viewport: `768px` width).
-* **Owner view**: The dashboard is responsive and optimized for mobile devices (`360px` width) for remote monitoring.
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
